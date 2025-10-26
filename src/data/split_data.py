@@ -1,6 +1,6 @@
 import os
 from sklearn.model_selection import train_test_split
-from src.config.config import TRAIN_SIZE, RANDOM_SEED, CSV_SPLIT_FOLDER
+from config.config import TRAIN_SIZE, RANDOM_SEED, CSV_SPLIT_FOLDER
 
 def create_splits(df):
     # Split train/temp

@@ -1,5 +1,5 @@
 import pandas as pd
-from src.config.config import CSV_PATH, IMAGES_FOLDER, ID_COLUMN, DIAGNOSIS_COLUMN, LABEL_MAPPING
+from config.config import CSV_PATH, IMAGES_FOLDER, ID_COLUMN, DIAGNOSIS_COLUMN, LABEL_MAPPING
 
 def load_and_clean_data():
     df = pd.read_csv(CSV_PATH)
