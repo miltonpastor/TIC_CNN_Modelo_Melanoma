@@ -3,7 +3,8 @@ import os
 
 # Rutas
 CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
-IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
+#IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
+IMAGES_FOLDER = '../data/ISIC-images'
 OUTPUT_FOLDER = '../outputs'
 CSV_SPLIT_FOLDER = os.path.join(OUTPUT_FOLDER, "csv_splits")
 

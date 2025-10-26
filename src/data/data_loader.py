@@ -10,4 +10,6 @@ def load_and_clean_data():
         'filepath': df_clean[ID_COLUMN].apply(lambda x: f"{IMAGES_FOLDER}/{x}.jpg"),
         'label': df_clean['label']
     })
+    df_simple['label'] = df_simple['label'].astype(str) # Convertir a string para compatibilidad con Keras
+
     return df_simple

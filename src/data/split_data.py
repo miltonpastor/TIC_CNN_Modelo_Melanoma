@@ -19,6 +19,7 @@ def create_splits(df):
         random_state=RANDOM_SEED,
         shuffle=True
     )
+    
     # Guardar CSVs
     os.makedirs(CSV_SPLIT_FOLDER, exist_ok=True)
     train_df.to_csv(os.path.join(CSV_SPLIT_FOLDER, "train.csv"), index=False)
