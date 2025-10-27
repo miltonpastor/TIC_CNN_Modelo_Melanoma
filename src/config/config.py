@@ -1,11 +1,18 @@
 # src/config.py
 import os
 
-# Rutas
-CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
-#IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
-IMAGES_FOLDER = '../data/ISIC-images'
-OUTPUT_FOLDER = '../outputs'
+ENV = os.environ.get("TIC_CNN_ENV", "local")
+
+if ENV == "Colab":
+    CSV_PATH = '/content/TIC_CNN_MODELO_MELANOMA/data/bcn20000_metadata_2025-07-22.csv'
+    IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
+    OUTPUT_FOLDER = '/content/TIC_CNN_MODELO_MELANOMA/outputs'
+else:
+    CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
+    IMAGES_FOLDER = '../data/ISIC-images'
+    OUTPUT_FOLDER = '../outputs'
+
+
 CSV_SPLIT_FOLDER = os.path.join(OUTPUT_FOLDER, "csv_splits")
 
 # Columnas CSV
