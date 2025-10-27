@@ -41,3 +41,21 @@ WIDTH_SHIFT_RANGE = 0.1
 HEIGHT_SHIFT_RANGE = 0.1
 HORIZONTAL_FLIP = True
 VERTICAL_FLIP = False
+
+# Configuración del modelo
+MODEL_CONFIG = {
+    'input_shape': INPUT_SHAPE,
+    'dropout_rate': 0.3,
+    'dense_units': 128,
+    'num_classes': 1  # Binario
+}
+
+# Configuración de entrenamiento
+TRAINING_CONFIG = {
+    'head_epochs': 10,
+    'finetune_epochs': 20,
+    'unfreeze_layers': 20
+}
+
+# Tamaño de muestra
+SAMPLE_SIZE = 1000  # None para usar todo el dataset, o un entero para muestrear
