@@ -9,7 +9,7 @@ if ENV == "Colab":
     OUTPUT_FOLDER = '/content/TIC_CNN_MODELO_MELANOMA/outputs'
 else:
     CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
-    IMAGES_FOLDER = '../data/ISIC-images'
+    IMAGES_FOLDER = '../../../../TIC/DataTIC/ISIC-images'
     OUTPUT_FOLDER = '../outputs'
 
 
@@ -34,7 +34,7 @@ LABEL_MAPPING = {
 # Configuración de preprocesamiento de imágenes
 IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
 INPUT_SHAPE = (224, 224, 3)
-BATCH_SIZE = 32
+BATCH_SIZE = 256
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -65,4 +65,4 @@ TRAINING_CONFIG = {
 }
 
 # Tamaño de muestra
-SAMPLE_SIZE = 1000  # None para usar todo el dataset, o un entero para muestrear
+SAMPLE_SIZE = 15000  # None para usar todo el dataset, o un entero para muestrear
