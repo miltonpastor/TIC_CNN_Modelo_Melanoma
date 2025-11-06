@@ -30,12 +30,12 @@ def plot_two_stage_training(history_a, history_b):
     plt.legend()
 
     plt.tight_layout()
-    plt.show()
 
     # Guardar con timestamp
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     file_path = os.path.join(OUTPUT_FOLDER, f"training_curves_{timestamp}.png")
     plt.savefig(file_path, dpi=300)
+    plt.show()
     plt.close()
 
     return file_path

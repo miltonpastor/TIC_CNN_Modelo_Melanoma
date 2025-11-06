@@ -1,18 +1,21 @@
 # src/config.py
 import os
+from datetime import datetime
 
 ENV = os.environ.get("TIC_CNN_ENV", "local")
 
 if ENV == "Colab":
-    CSV_PATH = '/content/TIC_CNN_MODELO_MELANOMA/data/bcn20000_metadata_2025-07-22.csv'
+    CSV_PATH = '/content/TIC_CNN_Modelo_Melanoma/data/bcn20000_metadata_2025-07-22.csv'
     IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
-    OUTPUT_FOLDER = '/content/TIC_CNN_MODELO_MELANOMA/outputs'
+    BASE_OUTPUT_FOLDER = '/content/TIC_CNN_Modelo_Melanoma/outputs'
 else:
     CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
-    IMAGES_FOLDER = '../../../../TIC/DataTIC/ISIC-images'
-    OUTPUT_FOLDER = '../outputs'
+    IMAGES_FOLDER = '../data/ISIC-images'
+    BASE_OUTPUT_FOLDER = '../outputs'
 
-
+# Carpeta de ejecución con timestamp
+RUN_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
+OUTPUT_FOLDER = os.path.join(BASE_OUTPUT_FOLDER, f"resnet50_{RUN_TIMESTAMP}")
 CSV_SPLIT_FOLDER = os.path.join(OUTPUT_FOLDER, "csv_splits")
 
 # Columnas CSV
@@ -65,4 +68,4 @@ TRAINING_CONFIG = {
 }
 
 # Tamaño de muestra
-SAMPLE_SIZE = 15000  # None para usar todo el dataset, o un entero para muestrear
+SAMPLE_SIZE = 100  # None para usar todo el dataset, o un entero para muestrear
