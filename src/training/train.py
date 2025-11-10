@@ -32,7 +32,7 @@ class TwoStageTrainer:
             metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
         )
         
-        callbacks = self._get_callbacks(stage='head_training')
+        callbacks = self._get_callbacks(stage='head_training', save_model=False)
         
         history_a = self.model.fit(
             train_data,
@@ -73,15 +73,12 @@ class TwoStageTrainer:
         
         return history_b
     
-    def _get_callbacks(self, stage):
+    def _get_callbacks(self, stage, save_model=True):
         """Configura callbacks según la etapa y guarda en outputs."""
-        checkpoint_path = os.path.join(OUTPUT_FOLDER, "checkpoints", f"{stage}_best.h5")
         log_dir = os.path.join(OUTPUT_FOLDER, "logs", stage)
-        
-        # Crear carpetas si no existen
-        os.makedirs(os.path.dirname(checkpoint_path), exist_ok=True)
         os.makedirs(log_dir, exist_ok=True)
-        return [
+        
+        callbacks = [
             EarlyStopping(
                 monitor='val_loss',
                 patience=8,
@@ -95,15 +92,22 @@ class TwoStageTrainer:
                 min_lr=1e-7,
                 verbose=1
             ),
-            ModelCheckpoint(
-                filepath=checkpoint_path,
-                monitor='val_auc',
-                mode='max',
-                save_best_only=True,
-                verbose=1
-            ),
             TensorBoard(
                 log_dir=log_dir,
                 histogram_freq=1
             )
         ]
+        
+        if save_model:
+            checkpoint_path = os.path.join(OUTPUT_FOLDER, "best_model.h5")
+            callbacks.append(
+                ModelCheckpoint(
+                    filepath=checkpoint_path,
+                    monitor='val_auc',
+                    mode='max',
+                    save_best_only=True,
+                    verbose=1
+                )
+            )
+        
+        return callbacks

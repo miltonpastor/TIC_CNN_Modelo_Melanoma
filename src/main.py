@@ -5,6 +5,7 @@ from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_mod
 from models.transfer_learning import build_resnet50_classifier
 from training.train import TwoStageTrainer
 from evaluation.plots import plot_two_stage_training
+from evaluation.metrics import save_results
 
 def main():
     # Cargar y limpiar datos
@@ -39,6 +40,13 @@ def main():
 
     # Evaluar modelo
     test_loss, test_acc, test_auc = trainer.model.evaluate(test_generator)
+
+    # Guardar resultados
+    save_results(
+        test_loss, test_acc, test_auc, 
+        history_a, history_b,
+        len(train_df), len(val_df), len(test_df)
+    )
 
     print(f"Test Accuracy: {test_acc:.4f}, Test AUC: {test_auc:.4f}, Test Loss: {test_loss:.4f}")
     print(f"Pipeline completo finalizado. Resultados en {OUTPUT_FOLDER}")
