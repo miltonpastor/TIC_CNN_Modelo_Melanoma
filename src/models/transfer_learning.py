@@ -2,10 +2,10 @@ import tensorflow as tf
 from tensorflow.keras.layers import GlobalAveragePooling2D, Dropout, Dense, BatchNormalization
 from tensorflow.keras.models import Model
 
-def build_resnet50_classifier(input_shape=(224, 224, 3), 
-                               dropout_rate=0.3,
-                               dense_units=128,
-                               num_classes=1):
+def build_resnet50_classifier(input_shape, 
+                               dropout_rate,
+                               dense_units,
+                               num_classes):
     """
     Construye modelo ResNet50 para clasificación de melanoma.
     

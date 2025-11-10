@@ -58,18 +58,18 @@ SHEAR_RANGE = 0.15
 MODEL_CONFIG = {
     'input_shape': INPUT_SHAPE,
     'dropout_rate': 0.5,
-    'dense_units': 256,
+    'dense_units': 128,
     'num_classes': 1
 }
 
 # Configuración de entrenamiento
 TRAINING_CONFIG = {
-    'head_epochs': 15,
+    'head_epochs': 10,
     'finetune_epochs': 30,
-    'unfreeze_layers': 40,
-    'initial_lr_head': 1e-2,
+    'unfreeze_layers': 30,
+    'initial_lr_head': 1e-3,
     'initial_lr_finetune': 1e-4
 }
 
 # Tamaño de muestra
-SAMPLE_SIZE = None  # Cambiar a None para usar TODO el dataset
+SAMPLE_SIZE = 3000  # Cambiar a None para usar TODO el dataset
