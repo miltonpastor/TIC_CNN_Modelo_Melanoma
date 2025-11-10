@@ -15,19 +15,19 @@ class TwoStageTrainer:
         self.base = base
         self.config = config
         
-    def stage_a_head_training(self, train_data, val_data):
+    def stage_a_head_training(self, train_data, val_data, class_weight=None):
         """
         Etapa A: Entrenar solo la cabeza del modelo.
-        LR: 1e-3 a 1e-4
-        Épocas: 5-10
+        LR: 1e-2
+        Épocas: 15
         """
         print("🟢 ETAPA A: Head Training (base congelada)")        
         # Congelar base
         self.base.trainable = False
         
-        # Compilar con LR moderado
+        # Compilar con LR alto
         self.model.compile(
-            optimizer=Adam(learning_rate=1e-3),
+            optimizer=Adam(learning_rate=self.config['initial_lr_head']),
             loss='binary_crossentropy',
             metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
         )
@@ -38,26 +38,28 @@ class TwoStageTrainer:
             train_data,
             validation_data=val_data,
             epochs=self.config['head_epochs'],
-            callbacks=callbacks
+            callbacks=callbacks,
+            class_weight=class_weight
         )
         
         return history_a
     
-    def stage_b_fine_tuning(self, train_data, val_data, unfreeze_layers=20):
+    def stage_b_fine_tuning(self, train_data, val_data, class_weight=None):
         """
         Etapa B: Fine-tuning de las últimas capas.
-        LR: 1e-5 a 1e-6
+        LR: 1e-4
+        Épocas: 30
         """
         print("🟢 ETAPA B: Fine-tuning (últimas capas descongeladas)")
         
-        # Descongelar últimas N capas
+        # Descongelar últimas N capas 
         self.base.trainable = True
-        for layer in self.base.layers[:-unfreeze_layers]:
+        for layer in self.base.layers[:-self.config['unfreeze_layers']]:
             layer.trainable = False
         
-        # Compilar con LR bajo
+        # Compilar con LR ajustado
         self.model.compile(
-            optimizer=Adam(learning_rate=1e-5),
+            optimizer=Adam(learning_rate=self.config['initial_lr_finetune']),
             loss='binary_crossentropy',
             metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
         )
@@ -68,7 +70,8 @@ class TwoStageTrainer:
             train_data,
             validation_data=val_data,
             epochs=self.config['finetune_epochs'],
-            callbacks=callbacks
+            callbacks=callbacks,
+            class_weight=class_weight
         )
         
         return history_b
@@ -87,9 +90,9 @@ class TwoStageTrainer:
             ),
             ReduceLROnPlateau(
                 monitor='val_loss',
-                factor=0.5,
-                patience=3,
-                min_lr=1e-7,
+                factor=0.3,
+                patience=2,
+                min_lr=1e-8,
                 verbose=1
             ),
             TensorBoard(

@@ -6,6 +6,7 @@ from models.transfer_learning import build_resnet50_classifier
 from training.train import TwoStageTrainer
 from evaluation.plots import plot_two_stage_training
 from evaluation.metrics import save_results
+from utils.class_weights import calculate_class_weights
 
 def main():
     # Cargar y limpiar datos
@@ -13,6 +14,9 @@ def main():
 
     # Crear splits
     train_df, val_df, test_df = create_splits(df)
+
+    # Calcular class weights para balancear clases
+    class_weight_dict = calculate_class_weights(train_df['label'])
 
     # Crear generadores de datos
     from data.preprocessing import create_data_generators, create_data_flow_from_dataframe
@@ -32,8 +36,8 @@ def main():
 
     # Entrenar modelo
     trainer = TwoStageTrainer(model, base, config_train)
-    history_a = trainer.stage_a_head_training(train_generator, val_generator)
-    history_b = trainer.stage_b_fine_tuning(train_generator, val_generator)
+    history_a = trainer.stage_a_head_training(train_generator, val_generator, class_weight_dict)
+    history_b = trainer.stage_b_fine_tuning(train_generator, val_generator, class_weight_dict)
 
     # Graficar resultados
     plot_two_stage_training(history_a, history_b)

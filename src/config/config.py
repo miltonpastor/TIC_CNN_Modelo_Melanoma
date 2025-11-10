@@ -45,27 +45,31 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 # Augmentation
 USE_AUGMENTATION = True
-ROTATION_RANGE = 20
-ZOOM_RANGE = 0.15
-WIDTH_SHIFT_RANGE = 0.1
-HEIGHT_SHIFT_RANGE = 0.1
+ROTATION_RANGE = 40
+ZOOM_RANGE = 0.25
+WIDTH_SHIFT_RANGE = 0.2
+HEIGHT_SHIFT_RANGE = 0.2
 HORIZONTAL_FLIP = True
-VERTICAL_FLIP = False
+VERTICAL_FLIP = True
+BRIGHTNESS_RANGE = [0.8, 1.2]
+SHEAR_RANGE = 0.15
 
 # Configuración del modelo
 MODEL_CONFIG = {
     'input_shape': INPUT_SHAPE,
-    'dropout_rate': 0.3,
-    'dense_units': 128,
-    'num_classes': 1  # Binario
+    'dropout_rate': 0.5,
+    'dense_units': 256,
+    'num_classes': 1
 }
 
 # Configuración de entrenamiento
 TRAINING_CONFIG = {
-    'head_epochs': 10,
-    'finetune_epochs': 20,
-    'unfreeze_layers': 20
+    'head_epochs': 15,
+    'finetune_epochs': 30,
+    'unfreeze_layers': 40,
+    'initial_lr_head': 1e-2,
+    'initial_lr_finetune': 1e-4
 }
 
 # Tamaño de muestra
-SAMPLE_SIZE = 100  # None para usar todo el dataset, o un entero para muestrear
+SAMPLE_SIZE = None  # Cambiar a None para usar TODO el dataset
