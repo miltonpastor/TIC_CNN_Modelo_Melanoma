@@ -36,9 +36,12 @@ outputs/
     │   ├── train.csv
     │   ├── val.csv
     │   └── test.csv
-    └── logs/                    # TensorBoard logs
-        ├── head_training/
-        └── fine_tuning/
+    ├── logs/                    # TensorBoard logs
+    │   ├── head_training/
+    │   └── fine_tuning/
+    └── openvino/                # Modelo convertido a OpenVINO
+        ├── best_model.xml
+        └── best_model.bin
 ```
 
 **Archivos principales:**
@@ -46,6 +49,16 @@ outputs/
 - `best_model.h5`: Modelo con mejor AUC en validación
 - `results.json`: Accuracy, AUC, loss, configuración y mapeo de etiquetas
 - `logs/`: Usar con `tensorboard --logdir=outputs/resnet50_*/logs`
+
+## Conversión a OpenVINO
+
+Para convertir el modelo .h5 a formato OpenVINO (optimizado para inferencia):
+
+```bash
+python scripts/convert_to_openvino.py outputs/resnet50_YYYYMMDD_HHMMSS/best_model.h5
+```
+
+Esto generará los archivos `best_model.xml` y `best_model.bin` en la carpeta `openvino/` dentro del directorio del modelo.
 
 ## Requisitos
 

@@ -72,4 +72,4 @@ TRAINING_CONFIG = {
 }
 
 # Tamaño de muestra
-SAMPLE_SIZE = None  # Cambiar a None para usar TODO el dataset
+SAMPLE_SIZE = 3000  # Cambiar a None para usar TODO el dataset
