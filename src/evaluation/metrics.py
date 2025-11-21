@@ -4,7 +4,7 @@ from datetime import datetime
 from config.config import OUTPUT_FOLDER, TRAINING_CONFIG, MODEL_CONFIG, LABEL_MAPPING
 
 
-def save_results(test_loss, test_acc, test_auc, history_a, history_b, train_size, val_size, test_size):
+def save_results(eval_results, history_a, history_b, train_size, val_size, test_size):
     """Guarda métricas y configuración en results.json"""
     results = {
         "model": "ResNet50",
@@ -26,10 +26,12 @@ def save_results(test_loss, test_acc, test_auc, history_a, history_b, train_size
         },
         "model_config": MODEL_CONFIG,
         "final_metrics": {
-            "test_accuracy": float(test_acc),
-            "test_loss": float(test_loss),
-            "test_auc": float(test_auc)
+            "test_accuracy": float(eval_results['accuracy']),
+            "test_loss": float(eval_results['loss']),
+            "test_auc": float(eval_results['auc'])
         },
+        "classification_report": eval_results['classification_report'],
+        "confusion_matrix": eval_results['confusion_matrix'].tolist(),
         "training_history": {
             "head_training": {
                 "final_train_acc": float(history_a.history['accuracy'][-1]),

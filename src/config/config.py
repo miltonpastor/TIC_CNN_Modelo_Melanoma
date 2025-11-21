@@ -9,8 +9,12 @@ if ENV == "Colab":
     IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
     BASE_OUTPUT_FOLDER = '/content/TIC_CNN_Modelo_Melanoma/outputs'
 else:
-    CSV_PATH = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/bcn20000_metadata_2025-10-19.csv'
-    IMAGES_FOLDER = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/ISIC-images/'
+    #Eddy local paths
+    # CSV_PATH = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/bcn20000_metadata_2025-10-19.csv'
+    # IMAGES_FOLDER = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/ISIC-images/'
+    # BASE_OUTPUT_FOLDER = '../outputs'
+    CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
+    IMAGES_FOLDER = '../data/ISIC-images/'
     BASE_OUTPUT_FOLDER = '../outputs'
 
 # Carpeta de ejecución con timestamp
@@ -72,4 +76,4 @@ TRAINING_CONFIG = {
 }
 
 # Tamaño de muestra
-SAMPLE_SIZE = 3000  # Cambiar a None para usar TODO el dataset
+SAMPLE_SIZE = 50  # Cambiar a None para usar TODO el dataset

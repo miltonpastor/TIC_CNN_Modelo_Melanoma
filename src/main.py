@@ -4,6 +4,7 @@ from data.split_data import create_splits
 from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model , TRAINING_CONFIG as config_train
 from models.transfer_learning import build_resnet50_classifier
 from training.train import TwoStageTrainer
+from evaluation.evaluate import evaluate_model
 from evaluation.plots import plot_two_stage_training
 from evaluation.metrics import save_results
 from utils.class_weights import calculate_class_weights
@@ -43,16 +44,16 @@ def main():
     plot_two_stage_training(history_a, history_b)
 
     # Evaluar modelo
-    test_loss, test_acc, test_auc = trainer.model.evaluate(test_generator)
+    eval_results = evaluate_model(trainer.model, test_generator)
 
     # Guardar resultados
     save_results(
-        test_loss, test_acc, test_auc, 
+        eval_results,
         history_a, history_b,
         len(train_df), len(val_df), len(test_df)
     )
 
-    print(f"Test Accuracy: {test_acc:.4f}, Test AUC: {test_auc:.4f}, Test Loss: {test_loss:.4f}")
+    print(f"Test Accuracy: {eval_results['accuracy']:.4f}, Test AUC: {eval_results['auc']:.4f}, Test Loss: {eval_results['loss']:.4f}")
     print(f"Pipeline completo finalizado. Resultados en {OUTPUT_FOLDER}")
 
 if __name__ == "__main__":
