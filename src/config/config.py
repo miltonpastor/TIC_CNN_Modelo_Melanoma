@@ -10,12 +10,12 @@ if ENV == "Colab":
     BASE_OUTPUT_FOLDER = '/content/TIC_CNN_Modelo_Melanoma/outputs'
 else:
     #Eddy local paths
-    # CSV_PATH = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/bcn20000_metadata_2025-10-19.csv'
-    # IMAGES_FOLDER = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/ISIC-images/'
-    # BASE_OUTPUT_FOLDER = '../outputs'
-    CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
-    IMAGES_FOLDER = '../data/ISIC-images/'
+    CSV_PATH = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/bcn20000_metadata_2025-10-19.csv'
+    IMAGES_FOLDER = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/ISIC-images/'
     BASE_OUTPUT_FOLDER = '../outputs'
+    #CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
+    #IMAGES_FOLDER = '../data/ISIC-images/'
+    #BASE_OUTPUT_FOLDER = '../outputs'
 
 # Carpeta de ejecución con timestamp
 RUN_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -41,7 +41,9 @@ LABEL_MAPPING = {
 # Configuración de preprocesamiento de imágenes
 IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
 INPUT_SHAPE = (224, 224, 3)
-BATCH_SIZE = 256
+
+#BATCH_SIZE EDDY
+BATCH_SIZE = 280
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -76,4 +78,4 @@ TRAINING_CONFIG = {
 }
 
 # Tamaño de muestra
-SAMPLE_SIZE = 50  # Cambiar a None para usar TODO el dataset
+SAMPLE_SIZE = 30000  # Cambiar a None para usar TODO el dataset

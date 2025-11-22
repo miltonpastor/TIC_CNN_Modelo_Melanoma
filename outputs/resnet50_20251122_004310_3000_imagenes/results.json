@@ -1,0 +1,88 @@
+{
+  "model": "ResNet50",
+  "timestamp": "2025-11-22 01:18:31",
+  "label_mapping": {
+    "Benign": 0,
+    "Malignant": 1
+  },
+  "dataset": {
+    "train_samples": 2099,
+    "val_samples": 450,
+    "test_samples": 451,
+    "total_samples": 3000
+  },
+  "training_config": {
+    "head_training_epochs": 10,
+    "fine_tuning_epochs": 30,
+    "total_epochs": 40,
+    "unfreeze_layers": 30,
+    "head_learning_rate": 0.001,
+    "fine_tuning_learning_rate": 1e-05
+  },
+  "model_config": {
+    "input_shape": [
+      224,
+      224,
+      3
+    ],
+    "dropout_rate": 0.5,
+    "dense_units": 128,
+    "num_classes": 1
+  },
+  "final_metrics": {
+    "test_accuracy": 0.7494456768035889,
+    "test_loss": 0.5461917519569397,
+    "test_auc": 0.8257091641426086
+  },
+  "classification_report": {
+    "Benigno": {
+      "precision": 0.7192982456140351,
+      "recall": 0.7699530516431925,
+      "f1-score": 0.7437641723356009,
+      "support": 213.0
+    },
+    "Maligno": {
+      "precision": 0.7802690582959642,
+      "recall": 0.7310924369747899,
+      "f1-score": 0.754880694143167,
+      "support": 238.0
+    },
+    "accuracy": 0.7494456762749445,
+    "macro avg": {
+      "precision": 0.7497836519549996,
+      "recall": 0.7505227443089912,
+      "f1-score": 0.749322433239384,
+      "support": 451.0
+    },
+    "weighted avg": {
+      "precision": 0.7514735303552748,
+      "recall": 0.7494456762749445,
+      "f1-score": 0.7496305408282854,
+      "support": 451.0
+    }
+  },
+  "confusion_matrix": [
+    [
+      164,
+      49
+    ],
+    [
+      64,
+      174
+    ]
+  ],
+  "training_history": {
+    "head_training": {
+      "final_train_acc": 0.7098618149757385,
+      "final_val_acc": 0.7400000095367432,
+      "final_train_loss": 0.5686638355255127,
+      "final_val_loss": 0.5212334990501404
+    },
+    "fine_tuning": {
+      "final_train_acc": 0.7689375877380371,
+      "final_val_acc": 0.7555555701255798,
+      "final_train_loss": 0.45285433530807495,
+      "final_val_loss": 0.5550930500030518
+    }
+  }
+}
