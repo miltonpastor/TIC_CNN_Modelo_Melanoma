@@ -9,7 +9,7 @@ def load_and_clean_data(sample_size=None, random_state=42):
         'filepath': df_clean[ID_COLUMN].apply(lambda x: f"{IMAGES_FOLDER}/{x}.jpg"),
         'label': df_clean['label']
     })
-    df_simple['label'] = df_simple['label'].astype(str)
+    df_simple['label'] = df_simple['label'].astype(str) # Convertir a string para compatibilidad con Keras
 
     if sample_size is not None:
         available = len(df_simple)

@@ -53,7 +53,8 @@ def main():
         len(train_df), len(val_df), len(test_df)
     )
 
-    print(f"Test Accuracy: {eval_results['accuracy']:.4f}, Test AUC: {eval_results['auc']:.4f}, Test Loss: {eval_results['loss']:.4f}")
+    print(f"Test Accuracy: {eval_results['accuracy']:.4f}, AUROC: {eval_results['roc_auc']:.4f}, Test Loss: {eval_results['loss']:.4f}")
+    print(f"AUPRC: {eval_results['pr_auc']:.4f}, Brier Score: {eval_results['brier_score']:.4f}")
     print(f"Pipeline completo finalizado. Resultados en {OUTPUT_FOLDER}")
 
 if __name__ == "__main__":

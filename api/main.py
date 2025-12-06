@@ -59,11 +59,11 @@ def preprocess_resnet50(img: np.ndarray) -> np.ndarray:
 
 @app.post("/api/v1/cnn/predict")
 async def predict(file: UploadFile = File(...)) -> Dict[str, Any]:
-    # Leer imagen con PIL (ya viene en RGB)
+    # Leer imagen con PIL (convirtiendo a RGB)
     contents = await file.read()
     img = Image.open(BytesIO(contents)).convert('RGB')
     
-    # Preprocesar - IMPORTANTE: usar el mismo preprocesamiento que en entrenamiento
+    # Preprocesar (igual que en entrenamiento)
     img = img.resize(INPUT_SHAPE)
     img = np.array(img)  # Convertir PIL a numpy array
     img = preprocess_resnet50(img)  # Preprocesamiento ResNet50/ImageNet
@@ -75,8 +75,15 @@ async def predict(file: UploadFile = File(...)) -> Dict[str, Any]:
     class_idx = int(score > 0.5)
     class_name = LABEL_MAPPING[class_idx]
     
+    # Calcular confianza: qué tan lejos está de 0.5 (umbral de decisión)
+    # Si score > 0.5, confianza = score; si score < 0.5, confianza = 1 - score
+    confidence = score if score > 0.5 else (1 - score)
+    confidence_percentage = round(confidence * 100, 2)
+    
     return {
         "class": class_idx,
         "class_name": class_name,
-        "score": score
+        "score": score,
+        "confidence": confidence,
+        "confidence_percentage": confidence_percentage
     }
