@@ -1,7 +1,7 @@
 # src/main.py
-from data.data_loader import load_and_clean_data
+from data.data_loader import load_and_clean_data, load_predivided_data
 from data.split_data import create_splits
-from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model , TRAINING_CONFIG as config_train
+from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model , TRAINING_CONFIG as config_train, DATA_MODE
 from models.transfer_learning import build_resnet50_classifier
 from training.train import TwoStageTrainer
 from evaluation.evaluate import evaluate_model
@@ -10,11 +10,14 @@ from evaluation.metrics import save_results
 from utils.class_weights import calculate_class_weights
 
 def main():
-    # Cargar y limpiar datos
-    df = load_and_clean_data(sample_size=SAMPLE_SIZE)
-
-    # Crear splits
-    train_df, val_df, test_df = create_splits(df)
+    # Cargar datos según el modo configurado
+    if DATA_MODE == 'predivided':
+        print("Loading pre-divided dataset...")
+        train_df, val_df, test_df = load_predivided_data()
+    else:  # 'csv' mode
+        print("Loading from CSV and creating splits...")
+        df = load_and_clean_data(sample_size=SAMPLE_SIZE)
+        train_df, val_df, test_df = create_splits(df)
 
     # Calcular class weights para balancear clases
     class_weight_dict = calculate_class_weights(train_df['label'])
