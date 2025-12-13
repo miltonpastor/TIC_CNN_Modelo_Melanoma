@@ -2,7 +2,7 @@
 import os
 from datetime import datetime
 
-ENV = os.environ.get("TIC_CNN_ENV", "local")
+ENV = "local"
 
 if ENV == "Colab":
     CSV_PATH = '/content/TIC_CNN_Modelo_Melanoma/data/bcn20000_metadata_2025-07-22.csv'
@@ -10,15 +10,15 @@ if ENV == "Colab":
     BASE_OUTPUT_FOLDER = '/content/TIC_CNN_Modelo_Melanoma/outputs'
 else:
     #Eddy local paths
-    # CSV_PATH = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/bcn20000_metadata_2025-10-19.csv'
-    # IMAGES_FOLDER = '/mnt/c/Users/eddyarias/Sovos/Sovos-Per-Emp/TIC/DataTIC/ISIC-images/'
+    CSV_PATH = ''
+    IMAGES_FOLDER = ''
     # BASE_OUTPUT_FOLDER = '../outputs'
     # CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
     # IMAGES_FOLDER = '../data/ISIC-images/'
-    BASE_OUTPUT_FOLDER = '../outputs'
+    BASE_OUTPUT_FOLDER = 'outputs'
 
     # Folder for pre-divided dataset lists
-    LISTS_FOLDER = '../data/lists'
+    LISTS_FOLDER = 'data/lists'
 
 # Data loading mode: 'csv' or 'predivided'
 # 'csv': Load from CSV and split automatically
@@ -47,8 +47,8 @@ LABEL_MAPPING = {
 }
 
 # Configuración de preprocesamiento de imágenes
-IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
-INPUT_SHAPE = (224, 224, 3)
+IMAGE_SIZE = (112, 112)  # Tamaño para ResNet50
+INPUT_SHAPE = (112, 112, 3)
 
 #BATCH_SIZE EDDY
 BATCH_SIZE = 280
@@ -78,8 +78,8 @@ MODEL_CONFIG = {
 
 # Configuración de entrenamiento
 TRAINING_CONFIG = {
-    'head_epochs': 10,
-    'finetune_epochs': 30,
+    'head_epochs': 4,
+    'finetune_epochs': 15,
     'unfreeze_layers': 30,
     'initial_lr_head': 1e-3,
     'initial_lr_finetune': 1e-4
