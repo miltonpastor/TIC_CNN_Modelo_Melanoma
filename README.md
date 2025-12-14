@@ -50,6 +50,28 @@ outputs/
 - `results.json`: Accuracy, AUC, loss, configuración y mapeo de etiquetas
 - `logs/`: Usar con `tensorboard --logdir=outputs/resnet50_*/logs`
 
+## Continuar Entrenamiento
+
+Si necesitas entrenar más épocas desde un modelo ya entrenado (sin repetir todo el proceso):
+
+1. Abre `scripts/continue_training.py` y configura:
+   - `PRETRAINED_MODEL_PATH`: Ruta al modelo .h5 que quieres continuar
+   - `ADDITIONAL_EPOCHS`: Cuántas épocas más quieres entrenar
+   - `CONTINUE_LR`: Learning rate (por defecto 1e-5, más bajo que el entrenamiento inicial)
+
+2. Ejecuta:
+
+```bash
+python scripts/continue_training.py
+```
+
+3. Resultados en `outputs/resnet50_continued_YYYYMMDD_HHMMSS/`:
+   - `best_model.h5`: Modelo con épocas adicionales
+   - `results.json`: **Métricas finales actualizadas** (usar estas)
+   - `continue_info.json`: Información del entrenamiento continuado
+
+**Nota:** El script NO repite el head training, solo continúa el fine-tuning desde donde quedó.
+
 ## Conversión a OpenVINO
 
 Para convertir el modelo .h5 a formato OpenVINO (optimizado para inferencia):

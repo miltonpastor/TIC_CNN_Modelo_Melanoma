@@ -76,6 +76,42 @@ class TwoStageTrainer:
         
         return history_b
     
+    def continue_fine_tuning(self, train_data, val_data, additional_epochs, learning_rate, class_weight=None):
+        """
+        Continúa el fine-tuning desde un modelo ya entrenado.
+        
+        Args:
+            train_data: Generador de datos de entrenamiento
+            val_data: Generador de datos de validación
+            additional_epochs: Número de épocas adicionales a entrenar
+            learning_rate: Learning rate para continuar (típicamente más bajo)
+            class_weight: Pesos de clase para balanceo
+        
+        Returns:
+            history: Historial de entrenamiento
+        """
+        print(f"🟢 CONTINUANDO Fine-tuning ({additional_epochs} épocas adicionales)")
+        print(f"   Learning rate: {learning_rate}")
+        
+        # Re-compilar con nuevo learning rate
+        self.model.compile(
+            optimizer=Adam(learning_rate=learning_rate),
+            loss='binary_crossentropy',
+            metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
+        )
+        
+        callbacks = self._get_callbacks(stage='continued_fine_tuning')
+        
+        history = self.model.fit(
+            train_data,
+            validation_data=val_data,
+            epochs=additional_epochs,
+            callbacks=callbacks,
+            class_weight=class_weight
+        )
+        
+        return history
+    
     def _get_callbacks(self, stage, save_model=True):
         """Configura callbacks según la etapa y guarda en outputs."""
         log_dir = os.path.join(OUTPUT_FOLDER, "logs", stage)
@@ -84,7 +120,7 @@ class TwoStageTrainer:
         callbacks = [
             EarlyStopping(
                 monitor='val_loss',
-                patience=8,
+                patience=5,
                 restore_best_weights=True,
                 verbose=1
             ),
