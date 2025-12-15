@@ -5,10 +5,7 @@ from config.config import OUTPUT_FOLDER, TRAINING_CONFIG, MODEL_CONFIG, LABEL_MA
 
 
 def save_results(eval_results, history_a, history_b, train_size, val_size, test_size):
-    """Guarda métricas y configuración en results.json"""
-    
-    # Extraer métricas del classification report
-    report = eval_results['classification_report']
+    """Guarda métricas automáticas (sin umbral) y configuración en results.json"""
     
     results = {
         "model_info": {
@@ -46,32 +43,56 @@ def save_results(eval_results, history_a, history_b, train_size, val_size, test_
             }
         },
         "evaluation_metrics": {
-            "overall_performance": {
-                "accuracy": float(eval_results['accuracy']),
-                "loss": float(eval_results['loss'])
-            },
-            "discrimination_metrics": {
-                "auroc": float(eval_results.get('roc_auc', 0.0)),
-                "auprc": float(eval_results.get('pr_auc', 0.0))
-            },
-            "calibration_metrics": {
-                "brier_score": float(eval_results.get('brier_score', 0.0))
-            },
-            "per_class_metrics": {
+            "auroc": float(eval_results['roc_auc']),
+            "auprc": float(eval_results['pr_auc']),
+            "brier_score": float(eval_results['brier_score'])
+        }
+    }
+    
+    results_path = os.path.join(OUTPUT_FOLDER, "results.json")
+    with open(results_path, 'w') as f:
+        json.dump(results, f, indent=2)
+    
+    print(f"✅ Resultados guardados en: {results_path}")
+    return results_path
+
+
+def save_threshold_evaluation(report, cm, accuracy, threshold, eval_dir):
+    """
+    Guarda resultados de evaluación con un umbral específico.
+    
+    Args:
+        report: Reporte de clasificación de sklearn (dict)
+        cm: Matriz de confusión (numpy array)
+        accuracy: Accuracy calculada (float)
+        threshold: Umbral usado para clasificación (float)
+        eval_dir: Directorio donde guardar los resultados
+    
+    Returns:
+        str: Ruta del archivo guardado
+    """
+    results = {
+        "evaluation_info": {
+            "threshold": threshold,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        },
+        "metrics": {
+            "accuracy": float(accuracy),
+            "per_class": {
                 "benign": {
-                    "precision": float(report['Benigno']['precision']),
-                    "recall": float(report['Benigno']['recall']),
-                    "f1_score": float(report['Benigno']['f1-score']),
-                    "support": int(report['Benigno']['support'])
+                    "precision": float(report['Benign']['precision']),
+                    "recall": float(report['Benign']['recall']),
+                    "f1_score": float(report['Benign']['f1-score']),
+                    "support": int(report['Benign']['support'])
                 },
                 "malignant": {
-                    "precision": float(report['Maligno']['precision']),
-                    "recall": float(report['Maligno']['recall']),
-                    "f1_score": float(report['Maligno']['f1-score']),
-                    "support": int(report['Maligno']['support'])
+                    "precision": float(report['Malignant']['precision']),
+                    "recall": float(report['Malignant']['recall']),
+                    "f1_score": float(report['Malignant']['f1-score']),
+                    "support": int(report['Malignant']['support'])
                 }
             },
-            "averaged_metrics": {
+            "averaged": {
                 "macro_avg": {
                     "precision": float(report['macro avg']['precision']),
                     "recall": float(report['macro avg']['recall']),
@@ -82,18 +103,17 @@ def save_results(eval_results, history_a, history_b, train_size, val_size, test_
                     "recall": float(report['weighted avg']['recall']),
                     "f1_score": float(report['weighted avg']['f1-score'])
                 }
-            },
-            "confusion_matrix": {
-                "matrix": eval_results['confusion_matrix'].tolist(),
-                "labels": ["Benign", "Malignant"],
-                "description": "[[TN, FP], [FN, TP]]"
             }
+        },
+        "confusion_matrix": {
+            "matrix": cm.tolist(),
+            "labels": ["Benign", "Malignant"],
+            "description": "[[TN, FP], [FN, TP]]"
         }
     }
     
-    results_path = os.path.join(OUTPUT_FOLDER, "results.json")
+    results_path = os.path.join(eval_dir, 'evaluation_results.json')
     with open(results_path, 'w') as f:
         json.dump(results, f, indent=2)
     
-    print(f"✅ Resultados guardados en: {results_path}")
     return results_path

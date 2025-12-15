@@ -1,0 +1,89 @@
+#!/usr/bin/env python3
+"""
+Script para evaluar métricas especificando un umbral.
+Guarda resultados en outputs/<run>/evaluations/threshold_<value>/
+"""
+import os
+import sys
+import tensorflow as tf
+
+# ============================================================================
+# CONFIGURACIÓN - Modifica estos valores según tus necesidades
+# ============================================================================
+RUN_DIR = 'resnet50_20251212_082430'  # Nombre del directorio del run
+THRESHOLD = 0.5                        # Umbral para clasificación binaria (0.0 - 1.0)
+# ============================================================================
+
+# Añadir src al path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+from evaluation.plots import plot_confusion_matrix
+from evaluation.metrics import save_threshold_evaluation
+from evaluation.evaluate import evaluate_model_with_threshold
+from data.data_loader import load_data
+
+def evaluate_with_threshold(run_dir, threshold):
+    """
+    Evalúa el modelo con un umbral específico.
+    
+    Args:
+        run_dir: Directorio del run (ej: outputs/resnet50_20251212_082430)
+        threshold: Umbral para clasificación (ej: 0.5)
+    """
+    # Cargar el modelo
+    model_path = os.path.join(run_dir, 'best_model.h5')
+    if not os.path.exists(model_path):
+        print(f"❌ Error: No se encontró el modelo en {model_path}")
+        return
+    
+    print(f"📦 Cargando modelo desde: {model_path}")
+    model = tf.keras.models.load_model(model_path)
+    
+    # Cargar datos de test
+    print("📊 Cargando datos de test...")
+    _, _, test_generator = load_data()
+    
+    # Evaluar con el umbral especificado
+    print(f"🔍 Evaluando con umbral {threshold}...")
+    report, cm, accuracy, y_true, y_pred_proba = evaluate_model_with_threshold(
+        model, test_generator, threshold
+    )
+    
+    # Crear directorio de salida
+    eval_dir = os.path.join(run_dir, 'evaluations', f'threshold_{threshold:.3f}')
+    os.makedirs(eval_dir, exist_ok=True)
+    
+    # Guardar matriz de confusión
+    cm_path = os.path.join(eval_dir, 'confusion_matrix.png')
+    plot_confusion_matrix(cm, ['Benign', 'Malignant'], cm_path)
+    print(f"✅ Matriz de confusión guardada en: {cm_path}")
+    
+    # Guardar resultados
+    results_path = save_threshold_evaluation(report, cm, accuracy, threshold, eval_dir)
+    
+    print(f"\n✅ Evaluación completada con threshold={threshold}")
+    print(f"📁 Resultados guardados en: {eval_dir}")
+    print(f"\n📊 Métricas:")
+    print(f"   Accuracy: {accuracy:.4f}")
+    print(f"   Benign    - Precision: {report['Benign']['precision']:.4f}, Recall: {report['Benign']['recall']:.4f}, F1: {report['Benign']['f1-score']:.4f}")
+    print(f"   Malignant - Precision: {report['Malignant']['precision']:.4f}, Recall: {report['Malignant']['recall']:.4f}, F1: {report['Malignant']['f1-score']:.4f}")
+    print(f"\n📋 Matriz de Confusión:")
+    print(f"   TN: {cm[0,0]:5d}  FP: {cm[0,1]:5d}")
+    print(f"   FN: {cm[1,0]:5d}  TP: {cm[1,1]:5d}")
+
+
+if __name__ == "__main__":
+    # Construir path del run
+    run_dir = os.path.join('outputs', RUN_DIR)
+    
+    if not os.path.exists(run_dir):
+        print(f"❌ Error: No se encontró el directorio {run_dir}")
+        sys.exit(1)
+    
+    # Validar threshold
+    if not 0 < THRESHOLD < 1:
+        print(f"❌ Error: El umbral debe estar entre 0 y 1 (recibido: {THRESHOLD})")
+        sys.exit(1)
+    
+    # Ejecutar evaluación
+    evaluate_with_threshold(run_dir, THRESHOLD)

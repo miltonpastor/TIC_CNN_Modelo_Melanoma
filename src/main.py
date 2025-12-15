@@ -46,8 +46,16 @@ def main():
     # Graficar resultados
     plot_two_stage_training(history_a, history_b)
 
-    # Evaluar modelo
-    eval_results = evaluate_model(trainer.model, test_generator)
+    # Guardar scores del validation set
+    from evaluation.evaluate import save_scores
+    val_generator.reset()
+    val_predictions = trainer.model.predict(val_generator)
+    val_true = val_generator.classes
+    save_scores(val_true, val_predictions.flatten(), dataset_name='validation')
+
+    # Evaluar modelo en test set (métricas sin umbral)
+    from evaluation.evaluate import evaluate_model_without_threshold
+    eval_results = evaluate_model_without_threshold(trainer.model, test_generator)
 
     # Guardar resultados
     save_results(
@@ -56,9 +64,9 @@ def main():
         len(train_df), len(val_df), len(test_df)
     )
 
-    print(f"Test Accuracy: {eval_results['accuracy']:.4f}, AUROC: {eval_results['roc_auc']:.4f}, Test Loss: {eval_results['loss']:.4f}")
-    print(f"AUPRC: {eval_results['pr_auc']:.4f}, Brier Score: {eval_results['brier_score']:.4f}")
+    print(f"AUROC: {eval_results['roc_auc']:.4f}, AUPRC: {eval_results['pr_auc']:.4f}, Brier Score: {eval_results['brier_score']:.4f}")
     print(f"Pipeline completo finalizado. Resultados en {OUTPUT_FOLDER}")
+    print(f"\nPara evaluar métricas con umbral, ejecuta: python scripts/evaluate_with_threshold.py --run {os.path.basename(OUTPUT_FOLDER)} --threshold 0.5")
 
 if __name__ == "__main__":
     main()

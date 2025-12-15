@@ -29,17 +29,27 @@ Cada ejecución genera una carpeta timestampeada en `outputs/`:
 ```
 outputs/
   resnet50_YYYYMMDD_HHMMSS/
-    ├── best_model.h5           # Modelo final entrenado
-    ├── results.json             # Métricas y configuración
-    ├── training_curves.png      # Gráficos de entrenamiento
-    ├── csv_splits/              # Splits de datos
+    ├── best_model.h5                    # Modelo final entrenado
+    ├── results.json                      # Métricas automáticas (sin umbral)
+    ├── prediction_scores_test.csv        # Scores para evaluación con umbral
+    ├── prediction_scores_validation.csv  # Scores de validación
+    ├── figures/                          # Gráficos automáticos
+    │   ├── training_curves_*.png
+    │   ├── roc_curve_*.png
+    │   ├── precision_recall_curve_*.png
+    │   └── calibration_curve_*.png
+    ├── csv_splits/                       # Splits de datos
     │   ├── train.csv
     │   ├── val.csv
     │   └── test.csv
-    ├── logs/                    # TensorBoard logs
+    ├── logs/                             # TensorBoard logs
     │   ├── head_training/
     │   └── fine_tuning/
-    └── openvino/                # Modelo convertido a OpenVINO
+    ├── evaluations/                      # Evaluaciones con umbral (manual)
+    │   ├── threshold_0.300/
+    │   ├── threshold_0.500/
+    │   └── threshold_0.700/
+    └── openvino/                         # Modelo convertido a OpenVINO
         ├── best_model.xml
         └── best_model.bin
 ```
@@ -47,8 +57,33 @@ outputs/
 **Archivos principales:**
 
 - `best_model.h5`: Modelo con mejor AUC en validación
-- `results.json`: Accuracy, AUC, loss, configuración y mapeo de etiquetas
+- `results.json`: Métricas sin umbral (AUROC, AUPRC, Brier Score), configuración y training history
+- `figures/`: Gráficos automáticos generados durante el entrenamiento
+- `evaluations/`: Métricas con umbral específico (ejecutadas manualmente)
 - `logs/`: Usar con `tensorboard --logdir=outputs/resnet50_*/logs`
+
+## Evaluación
+
+El proyecto separa las métricas en dos tipos:
+
+### Automáticas (Sin Umbral)
+
+Se calculan en cada ejecución:
+
+- AUROC, AUPRC, Brier Score
+- Curvas: ROC, Precision-Recall, Calibración
+
+### Manuales (Con Umbral)
+
+Requieren ejecutar script separado:
+
+```bash
+python scripts/evaluate_with_threshold.py
+```
+
+Genera: Accuracy, Precision, Recall, F1, Matriz de Confusión
+
+📖 **Documentación detallada:** Ver [docs/EVALUATION.md](docs/EVALUATION.md)
 
 ## Continuar Entrenamiento
 

@@ -46,16 +46,6 @@ def plot_two_stage_training(history_a, history_b):
     plt.tight_layout()
     return _save_plot("training_curves")
 
-def plot_confusion_matrix(cm):
-    """Grafica y guarda la matriz de confusión."""
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True)
-    plt.title('Matriz de Confusión')
-    plt.ylabel('Valor Real')
-    plt.xlabel('Valor Predicho')
-    plt.tight_layout()
-    return _save_plot("confusion_matrix")
-
 def plot_calibration_curve(y_true, y_pred_proba, n_bins=10):
     """
     Grafica la curva de calibración del modelo.
@@ -167,5 +157,24 @@ def plot_precision_recall_curve(y_true, y_pred_proba):
     
     plt.tight_layout()
     return _save_plot("precision_recall_curve")
+
+def plot_confusion_matrix(cm, labels, save_path):
+    """
+    Grafica y guarda la matriz de confusión.
+    
+    Args:
+        cm: Matriz de confusión (numpy array o similar)
+        labels: Lista de etiquetas para las clases
+        save_path: Ruta donde guardar la imagen
+    """
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', cbar=True,
+                xticklabels=labels, yticklabels=labels)
+    plt.title('Matriz de Confusión')
+    plt.ylabel('Valor Real')
+    plt.xlabel('Valor Predicho')
+    plt.tight_layout()
+    plt.savefig(save_path, dpi=300)
+    plt.close()
 
 

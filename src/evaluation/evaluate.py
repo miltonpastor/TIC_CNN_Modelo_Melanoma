@@ -1,59 +1,98 @@
 import tensorflow as tf
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score, average_precision_score, brier_score_loss
+from sklearn.metrics import roc_auc_score, average_precision_score, brier_score_loss
 import numpy as np
 import pandas as pd
-from evaluation.plots import plot_confusion_matrix, plot_calibration_curve, plot_roc_curve, plot_precision_recall_curve
+import os
+from evaluation.plots import plot_calibration_curve, plot_roc_curve, plot_precision_recall_curve
+from config.config import OUTPUT_FOLDER
 
-def evaluate_model(model, test_generator):
-    """Evalúa el modelo y retorna métricas detalladas."""
+def evaluate_model_without_threshold(model, test_generator):
+    """Evalúa métricas que NO requieren umbral (automáticas en cada run).
+    
+    Args:
+        model: Modelo de TensorFlow a evaluar
+        test_generator: Generador de datos de prueba
+    
+    Returns:
+        dict: Métricas calculadas (AUROC, AUPRC, Brier Score)
+    """
     test_generator.reset()
     
-    # Predicciones
-    y_pred = model.predict(test_generator)
-    y_pred_classes = (y_pred > 0.5).astype(int).flatten()
+    # Predicciones (probabilidades)
+    y_pred_proba = model.predict(test_generator).flatten()
     y_true = test_generator.classes
     
-    # Métricas (el modelo retorna: loss, accuracy, auc)
-    test_loss, test_acc, test_auc_keras = model.evaluate(test_generator, verbose=0)
-    
-    # Calcular AUC-ROC y PR-AUC con sklearn (usando probabilidades)
-    y_pred_proba = y_pred.flatten()
+    # Métricas sin umbral
     roc_auc = roc_auc_score(y_true, y_pred_proba)
     pr_auc = average_precision_score(y_true, y_pred_proba)
     brier_score = brier_score_loss(y_true, y_pred_proba)
     
-    # Reporte de clasificación
+    # Gráficos
+    plot_calibration_curve(y_true, y_pred_proba)
+    plot_roc_curve(y_true, y_pred_proba)
+    plot_precision_recall_curve(y_true, y_pred_proba)
+    
+    # Guardar scores para análisis posterior
+    save_scores(y_true, y_pred_proba, dataset_name='test')
+    
+    return {
+        'roc_auc': roc_auc,
+        'pr_auc': pr_auc,
+        'brier_score': brier_score
+    }
+
+def save_scores(y_true, y_pred_proba, dataset_name='test'):
+    """Guarda los scores de predicción para análisis posterior.
+    
+    Args:
+        y_true: Etiquetas verdaderas
+        y_pred_proba: Probabilidades predichas
+        dataset_name: Nombre del dataset ('validation' o 'test')
+    """
+    scores_df = pd.DataFrame({
+        'true_label': y_true,
+        'predicted_score': y_pred_proba
+    })
+    
+    scores_path = os.path.join(OUTPUT_FOLDER, f'prediction_scores_{dataset_name}.csv')
+    scores_df.to_csv(scores_path, index=False)
+    print(f"Scores ({dataset_name}) guardados en: {scores_path}")
+
+
+def evaluate_model_with_threshold(model, test_generator, threshold=0.5):
+    """
+    Evalúa el modelo con un umbral específico.
+    
+    Args:
+        model: Modelo de TensorFlow a evaluar
+        test_generator: Generador de datos de prueba
+        threshold: Umbral para clasificación (default: 0.5)
+    
+    Returns:
+        tuple: (report, cm, accuracy, y_true, y_pred_proba)
+    """
+    from sklearn.metrics import classification_report, confusion_matrix
+    
+    test_generator.reset()
+    
+    # Predicciones (probabilidades)
+    y_pred_proba = model.predict(test_generator).flatten()
+    y_true = test_generator.classes
+    
+    # Aplicar umbral
+    y_pred_classes = (y_pred_proba > threshold).astype(int)
+    
+    # Calcular métricas
     report = classification_report(
         y_true, 
         y_pred_classes,
-        target_names=['Benigno', 'Maligno'],
+        target_names=['Benign', 'Malignant'],
         output_dict=True
     )
     
-    # Matriz de confusión
     cm = confusion_matrix(y_true, y_pred_classes)
     
-    # Graficar matriz de confusión
-    plot_confusion_matrix(cm)
+    # Calcular accuracy
+    accuracy = (y_pred_classes == y_true).mean()
     
-    # Graficar curva de calibración
-    plot_calibration_curve(y_true, y_pred_proba)
-    
-    # Graficar curva ROC
-    plot_roc_curve(y_true, y_pred_proba)
-    
-    # Graficar curva Precision-Recall
-    plot_precision_recall_curve(y_true, y_pred_proba)
-    
-    return {
-        'accuracy': test_acc,
-        'loss': test_loss,
-        'roc_auc': roc_auc,
-        'pr_auc': pr_auc,
-        'brier_score': brier_score,
-        'classification_report': report,
-        'confusion_matrix': cm,
-        'y_true': y_true,
-        'y_pred': y_pred_classes,
-        'y_pred_proba': y_pred_proba
-    }
+    return report, cm, accuracy, y_true, y_pred_proba
