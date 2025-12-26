@@ -70,7 +70,7 @@
         "f1_score": 0.6262099776619509,
         "support": 2058
       }
-    },
+    },|
     "averaged_metrics": {
       "macro_avg": {
         "precision": 0.7401595388944824,

@@ -1,0 +1,49 @@
+{
+  "model_info": {
+    "architecture": "ResNet50",
+    "timestamp": "2025-12-24 20:08:06"
+  },
+  "dataset_info": {
+    "train_samples": 46840,
+    "val_samples": 11336,
+    "test_samples": 17125,
+    "total_samples": 75301,
+    "label_mapping": {
+      "Benign": 0,
+      "Malignant": 1
+    }
+  },
+  "training_config": {
+    "head_training_epochs": 4,
+    "fine_tuning_epochs": 15,
+    "total_epochs": 19,
+    "unfreeze_layers": 30,
+    "head_learning_rate": 0.001,
+    "fine_tuning_learning_rate": 1e-05
+  },
+  "model_config": {
+    "input_shape": [
+      112,
+      112,
+      3
+    ],
+    "dropout_rate": 0.5,
+    "dense_units": 128,
+    "num_classes": 1
+  },
+  "training_history": {
+    "fine_tuning": {
+      "final_accuracy": 0.9023911356925964,
+      "final_val_accuracy": 0.9064043760299683,
+      "final_loss": 0.21371768414974213,
+      "final_val_loss": 0.2307419627904892,
+      "final_auc": 0.9725297093391418,
+      "final_val_auc": 0.9523009657859802
+    }
+  },
+  "evaluation_metrics": {
+    "auroc": 0.9262730777583483,
+    "auprc": 0.6486430599739312,
+    "brier_score": 0.09264727542808848
+  }
+}

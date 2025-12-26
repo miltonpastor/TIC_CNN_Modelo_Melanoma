@@ -16,23 +16,24 @@ from data.data_loader import load_predivided_data
 from data.preprocessing import create_data_generators, create_data_flow_from_dataframe
 from utils.class_weights import calculate_class_weights
 from training.train import TwoStageTrainer
-from evaluation.evaluate import evaluate_model
+from evaluation.evaluate import evaluate_model_without_threshold
 from evaluation.metrics import save_results
 from datetime import datetime
 import json
 
 # ============ CONFIGURACIÓN ============
 # Ruta al modelo pre-entrenado
-PRETRAINED_MODEL_PATH = 'outputs/resnet50_20251212_082430/best_model.h5'
+# outputs\resnet50_20251221_124318\best_model.h5
+PRETRAINED_MODEL_PATH = 'outputs/resnet50_20251221_124318/best_model.h5'
 
 # Épocas ya completadas (head_training: 4 + fine_tuning: 15 = 19)
 COMPLETED_EPOCHS = 19
 
 # Épocas objetivo para fine-tuning (querías 50 en total)
-TARGET_FINE_TUNING_EPOCHS = 30
+TARGET_FINE_TUNING_EPOCHS = 20
 
 # Épocas adicionales a entrenar
-ADDITIONAL_EPOCHS = TARGET_FINE_TUNING_EPOCHS - 15  # 30 - 15 = 15 épocas más
+ADDITIONAL_EPOCHS = TARGET_FINE_TUNING_EPOCHS - 19  # 20 - 19 = 1 época más
 
 # Learning rate para continuar (puede ser más bajo)
 CONTINUE_LR = 1e-5 
@@ -95,9 +96,9 @@ def main():
     
     print("\n✅ Entrenamiento completado!")
     
-    # Evaluar modelo
+    # Evaluar modelo (métricas sin umbral, consistentes con save_results)
     print("\n📊 Evaluando modelo en test set...")
-    eval_results = evaluate_model(trainer.model, test_generator)
+    eval_results = evaluate_model_without_threshold(trainer.model, test_generator)
     
     # Guardar resultados
     print("\n💾 Guardando resultados...")
@@ -124,9 +125,9 @@ def main():
     print("\n" + "="*60)
     print("🎉 PROCESO COMPLETADO")
     print("="*60)
-    print(f"📈 Test Accuracy: {eval_results['accuracy']:.4f}")
     print(f"📈 AUROC: {eval_results['roc_auc']:.4f}")
     print(f"📈 AUPRC: {eval_results['pr_auc']:.4f}")
+    print(f"📈 Brier Score: {eval_results['brier_score']:.4f}")
     print(f"📂 Resultados guardados en: {OUTPUT_FOLDER}")
     print("="*60)
 

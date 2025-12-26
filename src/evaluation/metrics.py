@@ -5,8 +5,31 @@ from config.config import OUTPUT_FOLDER, TRAINING_CONFIG, MODEL_CONFIG, LABEL_MA
 
 
 def save_results(eval_results, history_a, history_b, train_size, val_size, test_size):
-    """Guarda métricas automáticas (sin umbral) y configuración en results.json"""
-    
+    """Guarda métricas automáticas (sin umbral) y configuración en results.json.
+
+    Esta función ahora tolera `history_a` o `history_b` en `None`,
+    registrando únicamente las fases disponibles del entrenamiento.
+    """
+
+    def _extract_phase_metrics(history):
+        """Extrae las últimas métricas conocidas de un objeto History de Keras."""
+        if history is None or getattr(history, 'history', None) is None:
+            return None
+        h = history.history
+        metrics_map = {}
+        # Lista de métricas comunes usadas en el proyecto
+        for key in ['accuracy', 'val_accuracy', 'loss', 'val_loss', 'auc', 'val_auc']:
+            if key in h and h[key]:
+                try:
+                    metrics_map[f"final_{key}"] = float(h[key][-1])
+                except (TypeError, ValueError):
+                    # En caso de que el valor no sea convertible a float
+                    metrics_map[f"final_{key}"] = h[key][-1]
+        return metrics_map if metrics_map else None
+
+    head_metrics = _extract_phase_metrics(history_a)
+    finetune_metrics = _extract_phase_metrics(history_b)
+
     results = {
         "model_info": {
             "architecture": "ResNet50",
@@ -29,18 +52,8 @@ def save_results(eval_results, history_a, history_b, train_size, val_size, test_
         },
         "model_config": MODEL_CONFIG,
         "training_history": {
-            "head_training": {
-                "final_train_accuracy": float(history_a.history['accuracy'][-1]),
-                "final_val_accuracy": float(history_a.history['val_accuracy'][-1]),
-                "final_train_loss": float(history_a.history['loss'][-1]),
-                "final_val_loss": float(history_a.history['val_loss'][-1])
-            },
-            "fine_tuning": {
-                "final_train_accuracy": float(history_b.history['accuracy'][-1]),
-                "final_val_accuracy": float(history_b.history['val_accuracy'][-1]),
-                "final_train_loss": float(history_b.history['loss'][-1]),
-                "final_val_loss": float(history_b.history['val_loss'][-1])
-            }
+            **({"head_training": head_metrics} if head_metrics is not None else {}),
+            **({"fine_tuning": finetune_metrics} if finetune_metrics is not None else {})
         },
         "evaluation_metrics": {
             "auroc": float(eval_results['roc_auc']),
