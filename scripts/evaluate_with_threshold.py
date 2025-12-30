@@ -5,6 +5,10 @@ Guarda resultados en outputs/<run>/evaluations/threshold_<value>/
 """
 import os
 import sys
+
+# Reducir verbosidad de TensorFlow (0=todo, 1=sin INFO, 2=sin WARNING, 3=solo ERROR)
+os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '3')
+
 import tensorflow as tf
 
 # ============================================================================
@@ -21,6 +25,16 @@ from evaluation.plots import plot_confusion_matrix
 from evaluation.metrics import save_threshold_evaluation
 from evaluation.evaluate import evaluate_model_with_threshold
 from data.data_loader import load_predivided_data
+from data.preprocessing import create_data_generators, create_data_flow_from_dataframe
+
+# Intentar habilitar memory growth en GPU para evitar reservas completas de VRAM
+try:
+    gpus = tf.config.list_physical_devices('GPU')
+    if gpus:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+except Exception as e:
+    print(f"⚠️ No se pudo habilitar memory growth en GPU: {e}")
 
 def evaluate_with_threshold(run_dir, threshold):
     """
@@ -37,11 +51,14 @@ def evaluate_with_threshold(run_dir, threshold):
         return
     
     print(f"📦 Cargando modelo desde: {model_path}")
-    model = tf.keras.models.load_model(model_path)
+    # compile=False evita el warning de absl sobre métricas compiladas cuando solo hacemos inferencia
+    model = tf.keras.models.load_model(model_path, compile=False)
     
-    # Cargar datos de test
+    # Cargar datos de test como DataFrame y convertir a generator
     print("📊 Cargando datos de test...")
-    _, _, test_generator = load_predivided_data()
+    _, _, test_df = load_predivided_data()
+    _, val_test_datagen = create_data_generators()
+    test_generator = create_data_flow_from_dataframe(val_test_datagen, test_df, shuffle=False)
     
     # Evaluar con el umbral especificado
     print(f"🔍 Evaluando con umbral {threshold}...")
