@@ -10,7 +10,7 @@ import tensorflow as tf
 # ============================================================================
 # CONFIGURACIÓN - Modifica estos valores según tus necesidades
 # ============================================================================
-RUN_DIR = 'resnet50_20251212_082430'  # Nombre del directorio del run
+RUN_DIR = 'resnet50_20251224_170207'  # Nombre del directorio del run
 THRESHOLD = 0.5                        # Umbral para clasificación binaria (0.0 - 1.0)
 # ============================================================================
 
@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from evaluation.plots import plot_confusion_matrix
 from evaluation.metrics import save_threshold_evaluation
 from evaluation.evaluate import evaluate_model_with_threshold
-from data.data_loader import load_data
+from data.data_loader import load_predivided_data
 
 def evaluate_with_threshold(run_dir, threshold):
     """
@@ -41,7 +41,7 @@ def evaluate_with_threshold(run_dir, threshold):
     
     # Cargar datos de test
     print("📊 Cargando datos de test...")
-    _, _, test_generator = load_data()
+    _, _, test_generator = load_predivided_data()
     
     # Evaluar con el umbral especificado
     print(f"🔍 Evaluando con umbral {threshold}...")
@@ -59,7 +59,7 @@ def evaluate_with_threshold(run_dir, threshold):
     print(f"✅ Matriz de confusión guardada en: {cm_path}")
     
     # Guardar resultados
-    results_path = save_threshold_evaluation(report, cm, accuracy, threshold, eval_dir)
+    save_threshold_evaluation(report, cm, accuracy, threshold, eval_dir)
     
     print(f"\n✅ Evaluación completada con threshold={threshold}")
     print(f"📁 Resultados guardados en: {eval_dir}")
