@@ -6,6 +6,7 @@ Script para generar scores de predicción desde un modelo ya entrenado.
 import os
 import sys
 import tensorflow as tf
+import numpy as np
 
 # ============================================================================
 # CONFIGURACIÓN - Modifica estos valores según tus necesidades
@@ -19,6 +20,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from evaluation.evaluate import save_scores
 from data.data_loader import load_predivided_data
+from data.preprocessing import create_data_generators, create_data_flow_from_dataframe
 
 def generate_scores(run_dir, dataset='validation'):
     """
@@ -37,14 +39,18 @@ def generate_scores(run_dir, dataset='validation'):
     print(f"📦 Cargando modelo desde: {model_path}")
     model = tf.keras.models.load_model(model_path)
     
-    # Cargar datos
+    # Cargar datos (DataFrames) y crear generadores Keras
     print(f"📊 Cargando datos de {dataset}...")
-    train_gen, val_gen, test_gen = load_predivided_data()
+    train_df, val_df, test_df = load_predivided_data()
     
+    # Crear datagens (usamos el de validación/test sin augmentation)
+    _, val_test_datagen = create_data_generators()
+
+    # Construir el generator adecuado desde el DataFrame
     if dataset == 'validation':
-        generator = val_gen
+        generator = create_data_flow_from_dataframe(val_test_datagen, val_df, shuffle=False)
     elif dataset == 'test':
-        generator = test_gen
+        generator = create_data_flow_from_dataframe(val_test_datagen, test_df, shuffle=False)
     else:
         print(f"❌ Error: Dataset '{dataset}' no válido. Usa 'validation' o 'test'")
         return
@@ -61,8 +67,10 @@ def generate_scores(run_dir, dataset='validation'):
     
     print(f"\n✅ Scores guardados exitosamente en: {run_dir}/prediction_scores_{dataset}.csv")
     print(f"📊 Total de muestras procesadas: {len(true_labels)}")
-    print(f"   Clase 0 (Benign): {(true_labels == 0).sum()}")
-    print(f"   Clase 1 (Malignant): {(true_labels == 1).sum()}")
+    benign_count = int(np.count_nonzero(np.asarray(true_labels) == 0))
+    malignant_count = int(np.count_nonzero(np.asarray(true_labels) == 1))
+    print(f"   Clase 0 (Benign): {benign_count}")
+    print(f"   Clase 1 (Malignant): {malignant_count}")
 
 
 if __name__ == "__main__":
