@@ -10,7 +10,7 @@ import tensorflow as tf
 # ============================================================================
 # CONFIGURACIÓN - Modifica estos valores según tus necesidades
 # ============================================================================
-RUN_DIR = 'resnet50_20251212_082430'  # Nombre del directorio del run
+RUN_DIR = 'resnet50_20251224_170207'  # Nombre del directorio del run
 DATASET = 'validation'                 # 'validation' o 'test'
 # ============================================================================
 
@@ -18,7 +18,7 @@ DATASET = 'validation'                 # 'validation' o 'test'
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 
 from evaluation.evaluate import save_scores
-from data.data_loader import load_data
+from data.data_loader import load_predivided_data
 
 def generate_scores(run_dir, dataset='validation'):
     """
@@ -39,7 +39,7 @@ def generate_scores(run_dir, dataset='validation'):
     
     # Cargar datos
     print(f"📊 Cargando datos de {dataset}...")
-    train_gen, val_gen, test_gen = load_data()
+    train_gen, val_gen, test_gen = load_predivided_data()
     
     if dataset == 'validation':
         generator = val_gen
@@ -55,17 +55,9 @@ def generate_scores(run_dir, dataset='validation'):
     predictions = model.predict(generator)
     true_labels = generator.classes
     
-    # Guardar scores en el directorio del run
-    # Cambiar OUTPUT_FOLDER temporalmente
-    from config.config import OUTPUT_FOLDER
-    import config.config as config_module
-    original_output = config_module.OUTPUT_FOLDER
-    config_module.OUTPUT_FOLDER = run_dir
+
+    save_scores(true_labels, predictions.flatten(), dataset_name=dataset, output_folder=run_dir)
     
-    save_scores(true_labels, predictions.flatten(), dataset_name=dataset)
-    
-    # Restaurar OUTPUT_FOLDER
-    config_module.OUTPUT_FOLDER = original_output
     
     print(f"\n✅ Scores guardados exitosamente en: {run_dir}/prediction_scores_{dataset}.csv")
     print(f"📊 Total de muestras procesadas: {len(true_labels)}")

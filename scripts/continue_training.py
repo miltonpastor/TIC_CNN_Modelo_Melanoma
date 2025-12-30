@@ -106,7 +106,9 @@ def main():
         eval_results,
         None,  # No hay history_a (ya se entrenó antes)
         history,  # Solo el history de las épocas adicionales
-        len(train_df), len(val_df), len(test_df)
+        len(train_df), 
+        len(val_df), 
+        len(test_df)
     )
     
     # Guardar información de continuación

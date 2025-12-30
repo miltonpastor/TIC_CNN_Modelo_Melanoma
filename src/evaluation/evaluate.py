@@ -41,7 +41,7 @@ def evaluate_model_without_threshold(model, test_generator):
         'brier_score': brier_score
     }
 
-def save_scores(y_true, y_pred_proba, dataset_name='test'):
+def save_scores(y_true, y_pred_proba, dataset_name='test', output_folder=OUTPUT_FOLDER):
     """Guarda los scores de predicción para análisis posterior.
     
     Args:
@@ -54,7 +54,7 @@ def save_scores(y_true, y_pred_proba, dataset_name='test'):
         'predicted_score': y_pred_proba
     })
     
-    scores_path = os.path.join(OUTPUT_FOLDER, f'prediction_scores_{dataset_name}.csv')
+    scores_path = os.path.join(output_folder, f'prediction_scores_{dataset_name}.csv')
     scores_df.to_csv(scores_path, index=False)
     print(f"Scores ({dataset_name}) guardados en: {scores_path}")
 
