@@ -2,25 +2,47 @@ import tensorflow as tf
 from tensorflow.keras.layers import GlobalAveragePooling2D, Dropout, Dense, BatchNormalization
 from tensorflow.keras.models import Model
 
-def build_resnet50_classifier(input_shape, 
-                               dropout_rate,
-                               dense_units,
-                               num_classes):
+import tensorflow as tf
+from tensorflow.keras.layers import GlobalAveragePooling2D, Dropout, Dense, BatchNormalization
+from tensorflow.keras.models import Model
+
+def build_cnn_classifier(arch,
+                          input_shape, 
+                          dropout_rate,
+                          dense_units,
+                          num_classes):
     """
-    Construye modelo ResNet50 para clasificación de melanoma.
+    Construye modelo CNN para clasificación de melanoma.
     
     Args:
+        arch: Arquitectura base ('resnet50' o 'resnet50v2')
         input_shape: Dimensiones de entrada
         dropout_rate: Tasa de dropout (0.3-0.5)
         dense_units: Unidades en capa densa
         num_classes: 1 para binario, >1 para multiclase
     """
-    base = tf.keras.applications.ResNet50(
-        weights='imagenet',
-        include_top=False,
-        input_shape=input_shape
-    )
-    
+
+    # Selección de arquitectura base
+    if arch == "resnet50":
+        base = tf.keras.applications.ResNet50(
+            weights='imagenet',
+            include_top=False,
+            input_shape=input_shape
+        )
+        preprocess_fn = tf.keras.applications.resnet.preprocess_input
+
+    elif arch == "resnet50v2":
+        base = tf.keras.applications.ResNet50V2(
+            weights='imagenet',
+            include_top=False,
+            input_shape=input_shape
+        )
+        preprocess_fn = tf.keras.applications.resnet_v2.preprocess_input
+
+    else:
+        raise ValueError(f"Arquitectura no soportada: {arch}")
+
+    # Head de clasificación
     x = GlobalAveragePooling2D()(base.output)
     x = Dropout(dropout_rate)(x)
     x = Dense(dense_units, activation='relu')(x)
@@ -31,7 +53,7 @@ def build_resnet50_classifier(input_shape,
     
     model = Model(inputs=base.input, outputs=output)
     
-    return model, base
+    return model, base, preprocess_fn
 
 def freeze_base(base_model):
     """Congela la base para head training."""

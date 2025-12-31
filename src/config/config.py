@@ -73,7 +73,8 @@ MODEL_CONFIG = {
     'input_shape': INPUT_SHAPE,
     'dropout_rate': 0.5,
     'dense_units': 128,
-    'num_classes': 1
+    'num_classes': 1,
+    'arquitecture': 'resnet50v2'
 }
 
 # Configuración de entrenamiento
@@ -82,7 +83,7 @@ TRAINING_CONFIG = {
     'finetune_epochs': 15,
     'unfreeze_layers': 30,
     'initial_lr_head': 1e-3,
-    'initial_lr_finetune': 1e-4
+    'initial_lr_finetune': 1e-5
 }
 
 # Tamaño de muestra

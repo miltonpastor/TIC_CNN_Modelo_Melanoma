@@ -31,7 +31,8 @@ def main():
 
 
     # Construir modelo
-    model, base = build_resnet50_classifier(
+    model, base = build_model(
+        arch = config_model['arquitecture'],
         input_shape=config_model['input_shape'],
         dropout_rate=config_model['dropout_rate'],
         dense_units=config_model['dense_units'],
