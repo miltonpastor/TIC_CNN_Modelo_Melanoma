@@ -1,10 +1,11 @@
 # src/main.py
+import os
 from data.data_loader import load_and_clean_data, load_predivided_data
 from data.split_data import create_splits
-from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model , TRAINING_CONFIG as config_train, DATA_MODE
-from models.transfer_learning import build_resnet50_classifier
+from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model , TRAINING_CONFIG as config_train, DATA_MODE, MODEL_NAME
+from models.transfer_learning import build_cnn_classifier
 from training.train import TwoStageTrainer
-from evaluation.evaluate import evaluate_model
+from evaluation.evaluate import evaluate_model_without_threshold
 from evaluation.plots import plot_two_stage_training
 from evaluation.metrics import save_results
 from utils.class_weights import calculate_class_weights
@@ -31,8 +32,8 @@ def main():
 
 
     # Construir modelo
-    model, base = build_model(
-        arch = config_model['arquitecture'],
+    model, base, preprocess_fn = build_cnn_classifier(
+        arch = MODEL_NAME,
         input_shape=config_model['input_shape'],
         dropout_rate=config_model['dropout_rate'],
         dense_units=config_model['dense_units'],
@@ -55,7 +56,6 @@ def main():
     save_scores(val_true, val_predictions.flatten(), dataset_name='validation')
 
     # Evaluar modelo en test set (métricas sin umbral)
-    from evaluation.evaluate import evaluate_model_without_threshold
     eval_results = evaluate_model_without_threshold(trainer.model, test_generator)
 
     # Guardar resultados

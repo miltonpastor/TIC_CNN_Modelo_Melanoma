@@ -4,35 +4,40 @@ from datetime import datetime
 
 ENV = "local"
 
-if ENV == "Colab":
-    CSV_PATH = '/content/TIC_CNN_Modelo_Melanoma/data/bcn20000_metadata_2025-07-22.csv'
-    IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
-    BASE_OUTPUT_FOLDER = '/content/TIC_CNN_Modelo_Melanoma/outputs'
-else:
-    #Eddy local paths
-    CSV_PATH = ''
-    IMAGES_FOLDER = ''
-    # BASE_OUTPUT_FOLDER = '../outputs'
-    # CSV_PATH = '../data/bcn20000_metadata_2025-07-22.csv'
-    # IMAGES_FOLDER = '../data/ISIC-images/'
-    BASE_OUTPUT_FOLDER = 'outputs'
-
-    # Folder for pre-divided dataset lists
-    LISTS_FOLDER = 'data/lists'
-
 # Data loading mode: 'csv' or 'predivided'
 # 'csv': Load from CSV and split automatically
 # 'predivided': Load from pre-divided train.txt, validation.txt, test.txt
-DATA_MODE = 'predivided'
+DATA_MODE = 'csv'
+MODEL_NAME = 'resnet50v2'
 
-# Carpeta de ejecución con timestamp
-RUN_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
-OUTPUT_FOLDER = os.path.join(BASE_OUTPUT_FOLDER, f"resnet50_{RUN_TIMESTAMP}")
-CSV_SPLIT_FOLDER = os.path.join(OUTPUT_FOLDER, "csv_splits")
+# ----- SI DATA_MODE es 'csv'
+if ENV == "Colab":
+    CSV_PATH = '/content/TIC_CNN_Modelo_Melanoma/data/bcn20000_metadata_2025-07-22.csv'
+    IMAGES_FOLDER = '/content/drive/MyDrive/DatasetTIC/ISIC-images'
+else:
+    CSV_PATH = 'data/bcn20000_metadata_2025-07-22.csv'
+    IMAGES_FOLDER = 'data/ISIC-images/'
 
 # Columnas CSV
 ID_COLUMN = 'isic_id'
 DIAGNOSIS_COLUMN = 'diagnosis_1'
+# Tamaño de muestra
+SAMPLE_SIZE = 30  # Cambiar a None para usar TODO el dataset
+
+# ----- SI DATA_MODE es 'predivided'
+# Folder for pre-divided dataset lists
+LISTS_FOLDER = 'data/lists'
+
+
+if ENV == "Colab":
+    BASE_OUTPUT_FOLDER = '/content/TIC_CNN_Modelo_Melanoma/outputs'
+elif ENV == "local":
+    BASE_OUTPUT_FOLDER = 'outputs'
+
+# Carpeta de ejecución con timestamp
+RUN_TIMESTAMP = datetime.now().strftime("%Y%m%d_%H%M%S")
+OUTPUT_FOLDER = os.path.join(BASE_OUTPUT_FOLDER, f"{MODEL_NAME}_{RUN_TIMESTAMP}")
+CSV_SPLIT_FOLDER = os.path.join(OUTPUT_FOLDER, "csv_splits")
 
 # Semilla y proporciones
 RANDOM_SEED = 42
@@ -74,7 +79,6 @@ MODEL_CONFIG = {
     'dropout_rate': 0.5,
     'dense_units': 128,
     'num_classes': 1,
-    'arquitecture': 'resnet50v2'
 }
 
 # Configuración de entrenamiento
@@ -86,5 +90,4 @@ TRAINING_CONFIG = {
     'initial_lr_finetune': 1e-5
 }
 
-# Tamaño de muestra
-SAMPLE_SIZE = 30  # Cambiar a None para usar TODO el dataset
+

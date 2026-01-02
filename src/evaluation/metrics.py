@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime
-from config.config import OUTPUT_FOLDER, TRAINING_CONFIG, MODEL_CONFIG, LABEL_MAPPING
+from config.config import OUTPUT_FOLDER, TRAINING_CONFIG, MODEL_CONFIG, LABEL_MAPPING, MODEL_NAME
 
 
 def save_results(eval_results, history_a, history_b, train_size, val_size, test_size):
@@ -32,7 +32,7 @@ def save_results(eval_results, history_a, history_b, train_size, val_size, test_
 
     results = {
         "model_info": {
-            "architecture": "ResNet50",
+            "architecture": MODEL_NAME,
             "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         },
         "dataset_info": {
