@@ -52,8 +52,8 @@ LABEL_MAPPING = {
 }
 
 # Configuración de preprocesamiento de imágenes
-IMAGE_SIZE = (112, 112)  # Tamaño para ResNet50
-INPUT_SHAPE = (112, 112, 3)
+IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
+INPUT_SHAPE = (224, 224, 3)
 
 #BATCH_SIZE EDDY
 BATCH_SIZE = 280
