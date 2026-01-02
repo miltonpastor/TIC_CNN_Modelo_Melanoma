@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime
-from config.config import OUTPUT_FOLDER, TRAINING_CONFIG, MODEL_CONFIG, LABEL_MAPPING, MODEL_NAME
+from config.config import OUTPUT_FOLDER, TRAINING_CONFIG, MODEL_CONFIG, LABEL_MAPPING, MODEL_NAME, BATCH_SIZE
 
 
 def save_results(eval_results, history_a, history_b, train_size, val_size, test_size):
@@ -47,8 +47,9 @@ def save_results(eval_results, history_a, history_b, train_size, val_size, test_
             "fine_tuning_epochs": TRAINING_CONFIG['finetune_epochs'],
             "total_epochs": TRAINING_CONFIG['head_epochs'] + TRAINING_CONFIG['finetune_epochs'],
             "unfreeze_layers": TRAINING_CONFIG['unfreeze_layers'],
-            "head_learning_rate": 1e-3,
-            "fine_tuning_learning_rate": 1e-5
+            "head_learning_rate": TRAINING_CONFIG['initial_lr_head'],
+            "fine_tuning_learning_rate": TRAINING_CONFIG['initial_lr_finetune'],
+            "batch_size": BATCH_SIZE
         },
         "model_config": MODEL_CONFIG,
         "training_history": {

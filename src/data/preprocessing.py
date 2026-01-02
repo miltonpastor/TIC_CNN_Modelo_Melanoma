@@ -12,8 +12,7 @@ from config.config import (
     HEIGHT_SHIFT_RANGE,
     HORIZONTAL_FLIP,
     VERTICAL_FLIP,
-    BRIGHTNESS_RANGE,
-    SHEAR_RANGE
+    BRIGHTNESS_RANGE
 )
 
 def create_data_generators():
@@ -33,7 +32,6 @@ def create_data_generators():
             horizontal_flip=HORIZONTAL_FLIP,
             vertical_flip=VERTICAL_FLIP,
             brightness_range=BRIGHTNESS_RANGE,
-            shear_range=SHEAR_RANGE,
             fill_mode='nearest'
         )
     else:
