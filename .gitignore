@@ -2,4 +2,4 @@ data/ISIC-images
 __pycache__/
 outputs/resnet50_*/*.h5
 outputs/resnet50_*/openvino/
-
+*.h5

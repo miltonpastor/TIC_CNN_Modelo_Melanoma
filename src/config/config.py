@@ -7,7 +7,7 @@ ENV = "local"
 # Data loading mode: 'csv' or 'predivided'
 # 'csv': Load from CSV and split automatically
 # 'predivided': Load from pre-divided train.txt, validation.txt, test.txt
-DATA_MODE = 'csv'
+DATA_MODE = 'predivided'
 MODEL_NAME = 'resnet50v2'
 
 # ----- SI DATA_MODE es 'csv'
@@ -56,7 +56,7 @@ IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
 INPUT_SHAPE = (224, 224, 3)
 
 #BATCH_SIZE
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
