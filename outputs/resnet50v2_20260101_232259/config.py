@@ -8,7 +8,7 @@ ENV = "local"
 # 'csv': Load from CSV and split automatically
 # 'predivided': Load from pre-divided train.txt, validation.txt, test.txt
 DATA_MODE = 'predivided'
-MODEL_NAME = 'resnet50'
+MODEL_NAME = 'resnet50v2'
 
 # ----- SI DATA_MODE es 'csv'
 if ENV == "Colab":
@@ -56,7 +56,7 @@ IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
 INPUT_SHAPE = (224, 224, 3)
 
 #BATCH_SIZE
-BATCH_SIZE = 280
+BATCH_SIZE = 128
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -64,20 +64,19 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 # Augmentation
 USE_AUGMENTATION = True
-ROTATION_RANGE = 40
-ZOOM_RANGE = 0.25
-WIDTH_SHIFT_RANGE = 0.2
-HEIGHT_SHIFT_RANGE = 0.2
+ROTATION_RANGE = 20
+ZOOM_RANGE = 0.15
+WIDTH_SHIFT_RANGE = 0.1
+HEIGHT_SHIFT_RANGE = 0.1
 HORIZONTAL_FLIP = True
 VERTICAL_FLIP = True
-BRIGHTNESS_RANGE = [0.8, 1.2]
-SHEAR_RANGE = 0.15
+BRIGHTNESS_RANGE = [0.9, 1.1]
 
 # Configuración del modelo
 MODEL_CONFIG = {
     'input_shape': INPUT_SHAPE,
     'dropout_rate': 0.5,
-    'dense_units': 128,
+    'dense_units': 256,
     'num_classes': 1,
 }
 
@@ -85,7 +84,9 @@ MODEL_CONFIG = {
 TRAINING_CONFIG = {
     'head_epochs': 4,
     'finetune_epochs': 15,
-    'unfreeze_layers': 30,
+    'unfreeze_layers': 50,
     'initial_lr_head': 1e-3,
-    'initial_lr_finetune': 1e-4
+    'initial_lr_finetune': 1e-5
 }
+
+
