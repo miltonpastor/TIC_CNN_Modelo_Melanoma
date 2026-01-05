@@ -20,13 +20,17 @@ def main():
         df = load_and_clean_data(sample_size=SAMPLE_SIZE)
         train_df, val_df, test_df = create_splits(df)
 
+    # Aplicar oversampling a train_df si está activado
+    from data.preprocessing import oversample_minority_class
+    train_df_balanced = oversample_minority_class(train_df)
+    
     # Calcular class weights para balancear clases
-    class_weight_dict = calculate_class_weights(train_df['label'])
+    class_weight_dict = calculate_class_weights(train_df_balanced['label'])
 
     # Crear generadores de datos
     from data.preprocessing import create_data_generators, create_data_flow_from_dataframe
     train_datagen, val_test_datagen = create_data_generators()
-    train_generator = create_data_flow_from_dataframe(train_datagen, train_df)
+    train_generator = create_data_flow_from_dataframe(train_datagen, train_df_balanced)
     val_generator = create_data_flow_from_dataframe(val_test_datagen, val_df, shuffle=False)
     test_generator = create_data_flow_from_dataframe(val_test_datagen, test_df, shuffle=False)
 

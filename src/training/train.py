@@ -5,7 +5,8 @@ from tensorflow.keras.callbacks import (
     ModelCheckpoint, TensorBoard
 )
 import os
-from config.config import OUTPUT_FOLDER
+from config.config import OUTPUT_FOLDER, CLASS_BALANCE_CONFIG
+from training.optimizers import focal_loss
 
 class TwoStageTrainer:
     """Entrenador con estrategia de Head Training + Fine-tuning."""
@@ -25,10 +26,21 @@ class TwoStageTrainer:
         # Congelar base
         self.base.trainable = False
         
+        # Seleccionar loss function
+        if CLASS_BALANCE_CONFIG['use_focal_loss']:
+            loss_fn = focal_loss(
+                gamma=CLASS_BALANCE_CONFIG['focal_gamma'],
+                alpha=CLASS_BALANCE_CONFIG['focal_alpha']
+            )
+            print(f"   Usando Focal Loss (gamma={CLASS_BALANCE_CONFIG['focal_gamma']}, alpha={CLASS_BALANCE_CONFIG['focal_alpha']})")
+        else:
+            loss_fn = 'binary_crossentropy'
+            print("   Usando Binary Crossentropy")
+        
         # Compilar con LR alto
         self.model.compile(
             optimizer=Adam(learning_rate=self.config['initial_lr_head']),
-            loss='binary_crossentropy',
+            loss=loss_fn,
             metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
         )
         
@@ -57,10 +69,19 @@ class TwoStageTrainer:
         for layer in self.base.layers[:-self.config['unfreeze_layers']]:
             layer.trainable = False
         
+        # Seleccionar loss function (igual que en stage A)
+        if CLASS_BALANCE_CONFIG['use_focal_loss']:
+            loss_fn = focal_loss(
+                gamma=CLASS_BALANCE_CONFIG['focal_gamma'],
+                alpha=CLASS_BALANCE_CONFIG['focal_alpha']
+            )
+        else:
+            loss_fn = 'binary_crossentropy'
+        
         # Compilar con LR ajustado
         self.model.compile(
             optimizer=Adam(learning_rate=self.config['initial_lr_finetune']),
-            loss='binary_crossentropy',
+            loss=loss_fn,
             metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
         )
         
@@ -93,10 +114,19 @@ class TwoStageTrainer:
         print(f"🟢 CONTINUANDO Fine-tuning ({additional_epochs} épocas adicionales)")
         print(f"   Learning rate: {learning_rate}")
         
+        # Seleccionar loss function (igual que en otras etapas)
+        if CLASS_BALANCE_CONFIG['use_focal_loss']:
+            loss_fn = focal_loss(
+                gamma=CLASS_BALANCE_CONFIG['focal_gamma'],
+                alpha=CLASS_BALANCE_CONFIG['focal_alpha']
+            )
+        else:
+            loss_fn = 'binary_crossentropy'
+        
         # Re-compilar con nuevo learning rate
         self.model.compile(
             optimizer=Adam(learning_rate=learning_rate),
-            loss='binary_crossentropy',
+            loss=loss_fn,
             metrics=['accuracy', tf.keras.metrics.AUC(name='auc')]
         )
         

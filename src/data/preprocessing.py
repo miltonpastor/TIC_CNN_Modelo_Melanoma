@@ -12,8 +12,10 @@ from config.config import (
     HEIGHT_SHIFT_RANGE,
     HORIZONTAL_FLIP,
     VERTICAL_FLIP,
-    BRIGHTNESS_RANGE
+    BRIGHTNESS_RANGE,
+    CLASS_BALANCE_CONFIG
 )
+import pandas as pd
 
 def create_data_generators():
     """
@@ -69,6 +71,54 @@ def create_data_flow_from_dataframe(datagen, dataframe, batch_size=BATCH_SIZE, s
         class_mode='binary',  # Clasificación binaria
         shuffle=shuffle
     )
+
+
+def oversample_minority_class(dataframe):
+    """
+    Sobremuestrea la clase minoritaria replicando sus filas.
+    Cada réplica tendrá augmentation diferente durante el entrenamiento.
+    
+    Args:
+        dataframe: DataFrame con columnas 'filepath' y 'label'
+        
+    Returns:
+        DataFrame balanceado con oversampling de clase minoritaria
+    """
+    if not CLASS_BALANCE_CONFIG['use_oversampling']:
+        print("⚠️  Oversampling desactivado")
+        return dataframe
+    
+    minority_class = CLASS_BALANCE_CONFIG['minority_class']
+    ratio = CLASS_BALANCE_CONFIG['oversample_ratio']
+    
+    # Separar clases
+    df_minority = dataframe[dataframe['label'] == str(minority_class)].copy()
+    df_majority = dataframe[dataframe['label'] != str(minority_class)].copy()
+    
+    original_minority = len(df_minority)
+    original_majority = len(df_majority)
+    
+    # Calcular cuántas réplicas necesitamos
+    target_minority = int(original_minority * ratio)
+    
+    # Oversamplear (con reemplazo para permitir duplicados)
+    df_minority_oversampled = df_minority.sample(
+        n=target_minority, 
+        replace=True, 
+        random_state=42
+    )
+    
+    # Combinar
+    df_balanced = pd.concat([df_majority, df_minority_oversampled], ignore_index=True)
+    df_balanced = df_balanced.sample(frac=1, random_state=42).reset_index(drop=True)  # Shuffle
+    
+    print(f"📊 Oversampling aplicado:")
+    print(f"   Clase mayoritaria: {original_majority} muestras")
+    print(f"   Clase minoritaria: {original_minority} → {target_minority} muestras ({ratio}x)")
+    print(f"   Total: {len(dataframe)} → {len(df_balanced)} muestras")
+    print(f"   Nuevo ratio: {original_majority/target_minority:.2f}:1")
+    
+    return df_balanced
 
 
 def load_and_preprocess_image(image_path):

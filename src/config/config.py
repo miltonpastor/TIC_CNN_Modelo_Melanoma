@@ -81,6 +81,16 @@ MODEL_CONFIG = {
     'num_classes': 1,
 }
 
+# Configuración de balanceo de clases
+CLASS_BALANCE_CONFIG = {
+    'use_oversampling': True,  # Activar oversampling de clase minoritaria
+    'minority_class': 1,  # Clase a oversamplear (1 = Malignant)
+    'oversample_ratio': 3.0,  # Multiplicador: 3x más ejemplos de malignos
+    'use_focal_loss': True,  # Usar Focal Loss en lugar de BCE
+    'focal_gamma': 2.0,  # Parámetro gamma de focal loss
+    'focal_alpha': 0.25,  # Parámetro alpha de focal loss (peso clase positiva)
+}
+
 # Configuración de entrenamiento
 TRAINING_CONFIG = {
     'head_epochs': 4,
