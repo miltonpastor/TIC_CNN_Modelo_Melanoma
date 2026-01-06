@@ -2,21 +2,19 @@
 """
 Script para evaluar métricas especificando un umbral.
 Guarda resultados en outputs/<run>/evaluations/threshold_<value>/
+
+Uso:
+    python scripts/evaluate_with_threshold.py --run resnet50_20260105_095956 --threshold 0.5
+    python scripts/evaluate_with_threshold.py -r resnet50_20260105_095956 -t 0.5
 """
 import os
 import sys
+import argparse
 
 # Reducir verbosidad de TensorFlow (0=todo, 1=sin INFO, 2=sin WARNING, 3=solo ERROR)
 os.environ.setdefault('TF_CPP_MIN_LOG_LEVEL', '3')
 
 import tensorflow as tf
-
-# ============================================================================
-# CONFIGURACIÓN - Modifica estos valores según tus necesidades
-# ============================================================================
-RUN_DIR = 'resnet50_20251224_170207'  # Nombre del directorio del run
-THRESHOLD = 0.5                        # Umbral para clasificación binaria (0.0 - 1.0)
-# ============================================================================
 
 # Añadir src al path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
@@ -90,17 +88,51 @@ def evaluate_with_threshold(run_dir, threshold):
 
 
 if __name__ == "__main__":
+    # Configurar argumentos de línea de comandos
+    parser = argparse.ArgumentParser(
+        description='Evaluar modelo con un umbral específico',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Ejemplos:
+  python scripts/evaluate_with_threshold.py --run resnet50_20260105_095956 --threshold 0.5
+  python scripts/evaluate_with_threshold.py -r resnet50_20260105_095956 -t 0.45
+  python scripts/evaluate_with_threshold.py -r resnet50_20260105_095956 -t 0.6
+        """
+    )
+    
+    parser.add_argument(
+        '--run', '-r',
+        type=str,
+        required=True,
+        help='Nombre del directorio del run (ej: resnet50_20260105_095956)'
+    )
+    
+    parser.add_argument(
+        '--threshold', '-t',
+        type=float,
+        default=0.5,
+        help='Umbral para clasificación binaria entre 0.0 y 1.0 (default: 0.5)'
+    )
+    
+    args = parser.parse_args()
+    
     # Construir path del run
-    run_dir = os.path.join('outputs', RUN_DIR)
+    run_dir = os.path.join('outputs', args.run)
     
     if not os.path.exists(run_dir):
         print(f"❌ Error: No se encontró el directorio {run_dir}")
+        print(f"\nDirectorios disponibles en outputs/:")
+        outputs_path = 'outputs'
+        if os.path.exists(outputs_path):
+            runs = [d for d in os.listdir(outputs_path) if os.path.isdir(os.path.join(outputs_path, d))]
+            for run in sorted(runs):
+                print(f"  - {run}")
         sys.exit(1)
     
     # Validar threshold
-    if not 0 < THRESHOLD < 1:
-        print(f"❌ Error: El umbral debe estar entre 0 y 1 (recibido: {THRESHOLD})")
+    if not 0 < args.threshold < 1:
+        print(f"❌ Error: El umbral debe estar entre 0 y 1 (recibido: {args.threshold})")
         sys.exit(1)
     
     # Ejecutar evaluación
-    evaluate_with_threshold(run_dir, THRESHOLD)
+    evaluate_with_threshold(run_dir, args.threshold)
