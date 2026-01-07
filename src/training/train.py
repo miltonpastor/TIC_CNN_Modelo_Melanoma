@@ -150,7 +150,7 @@ class TwoStageTrainer:
         callbacks = [
             EarlyStopping(
                 monitor='val_loss',
-                patience=8,
+                patience=5,
                 restore_best_weights=True,
                 verbose=1
             ),
