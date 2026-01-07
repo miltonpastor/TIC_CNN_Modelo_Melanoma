@@ -1,0 +1,52 @@
+{
+  "evaluation_info": {
+    "threshold": 0.5,
+    "timestamp": "2026-01-06 19:56:51"
+  },
+  "metrics": {
+    "accuracy": 0.9166715328467153,
+    "per_class": {
+      "benign": {
+        "precision": 0.9563093804362371,
+        "recall": 0.9486294551005509,
+        "f1_score": 0.9524539366274615,
+        "support": 15067
+      },
+      "malignant": {
+        "precision": 0.6447911886186324,
+        "recall": 0.6827016520894071,
+        "f1_score": 0.6632050979466604,
+        "support": 2058
+      }
+    },
+    "averaged": {
+      "macro_avg": {
+        "precision": 0.8005502845274348,
+        "recall": 0.815665553594979,
+        "f1_score": 0.8078295172870609
+      },
+      "weighted_avg": {
+        "precision": 0.9188726248881711,
+        "recall": 0.9166715328467153,
+        "f1_score": 0.9176934046563615
+      }
+    }
+  },
+  "confusion_matrix": {
+    "matrix": [
+      [
+        14293,
+        774
+      ],
+      [
+        653,
+        1405
+      ]
+    ],
+    "labels": [
+      "Benign",
+      "Malignant"
+    ],
+    "description": "[[TN, FP], [FN, TP]]"
+  }
+}

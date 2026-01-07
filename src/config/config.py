@@ -55,8 +55,8 @@ LABEL_MAPPING = {
 IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
 INPUT_SHAPE = (224, 224, 3)
 
-#BATCH_SIZE
-BATCH_SIZE = 280
+# Batch size (optimizado para RTX 4060 Laptop 8GB)
+BATCH_SIZE = 32
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -83,10 +83,10 @@ MODEL_CONFIG = {
 
 # Configuración de balanceo de clases
 CLASS_BALANCE_CONFIG = {
-    'use_oversampling': True,  # Activar oversampling de clase minoritaria
+    'use_oversampling': False,  # Activar oversampling de clase minoritaria
     'minority_class': 1,  # Clase a oversamplear (1 = Malignant)
     'oversample_ratio': 3.0,  # Multiplicador: 3x más ejemplos de malignos
-    'use_focal_loss': True,  # Usar Focal Loss en lugar de BCE
+    'use_focal_loss': False,  # Usar Focal Loss en lugar de BCE
     'focal_gamma': 2.0,  # Parámetro gamma de focal loss
     'focal_alpha': 0.25,  # Parámetro alpha de focal loss (peso clase positiva)
 }
