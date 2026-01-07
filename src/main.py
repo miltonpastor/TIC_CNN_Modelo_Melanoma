@@ -2,7 +2,7 @@
 import os
 from data.data_loader import load_and_clean_data, load_predivided_data
 from data.split_data import create_splits
-from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model , TRAINING_CONFIG as config_train, DATA_MODE, MODEL_NAME
+from config.config import OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model , TRAINING_CONFIG as config_train, DATA_MODE, MODEL_NAME, TRAIN_SAMPLE_SIZE
 from models.transfer_learning import build_cnn_classifier
 from training.train import TwoStageTrainer
 from evaluation.evaluate import evaluate_model_without_threshold
@@ -14,7 +14,7 @@ def main():
     # Cargar datos según el modo configurado
     if DATA_MODE == 'predivided':
         print("Loading pre-divided dataset...")
-        train_df, val_df, test_df = load_predivided_data()
+        train_df, val_df, test_df = load_predivided_data(train_sample_size=TRAIN_SAMPLE_SIZE)
     else:  # 'csv' mode
         print("Loading from CSV and creating splits...")
         df = load_and_clean_data(sample_size=SAMPLE_SIZE)

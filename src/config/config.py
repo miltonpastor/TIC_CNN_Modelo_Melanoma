@@ -27,6 +27,9 @@ SAMPLE_SIZE = 30  # Cambiar a None para usar TODO el dataset
 # ----- SI DATA_MODE es 'predivided'
 # Folder for pre-divided dataset lists
 LISTS_FOLDER = 'data/lists'
+# Number of training samples to use (None = use all)
+# Validation and test will be proportional
+TRAIN_SAMPLE_SIZE = None  # e.g., 10000 for 10k training samples
 
 
 if ENV == "Colab":
