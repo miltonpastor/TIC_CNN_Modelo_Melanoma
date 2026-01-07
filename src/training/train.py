@@ -2,11 +2,36 @@ import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import (
     EarlyStopping, ReduceLROnPlateau, 
-    ModelCheckpoint, TensorBoard
+    ModelCheckpoint, TensorBoard, Callback
 )
 import os
+import signal
 from config.config import OUTPUT_FOLDER, CLASS_BALANCE_CONFIG
 from training.optimizers import focal_loss
+
+
+class InterruptionHandler(Callback):
+    """Guarda el modelo al interceptar Ctrl+C."""
+    
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+        self.interrupted = False
+        self.current_epoch = 0
+        signal.signal(signal.SIGINT, self._handle_interrupt)
+    
+    def _handle_interrupt(self, signum, frame):
+        print("\n⚠️  Interrupción detectada. Guardando modelo...")
+        self.interrupted = True
+        self.model.stop_training = True
+    
+    def on_epoch_end(self, epoch, logs=None):
+        self.current_epoch = epoch + 1
+        if self.interrupted:
+            self.model.save(self.filepath)
+            print(f"✅ Modelo guardado en: {self.filepath}")
+            print(f"📍 Época alcanzada: {self.current_epoch}")
+            self.interrupted = False
 
 class TwoStageTrainer:
     """Entrenador con estrategia de Head Training + Fine-tuning."""
@@ -166,6 +191,10 @@ class TwoStageTrainer:
                 histogram_freq=1
             )
         ]
+        
+        # Guardar modelo en interrupciones
+        interrupt_path = os.path.join(OUTPUT_FOLDER, f"interrupted_{stage}.h5")
+        callbacks.append(InterruptionHandler(filepath=interrupt_path))
         
         if save_model:
             checkpoint_path = os.path.join(OUTPUT_FOLDER, "best_model.h5")
