@@ -59,7 +59,7 @@ IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
 INPUT_SHAPE = (224, 224, 3)
 
 # Batch size (optimizado para RTX 4060 Laptop 8GB)
-BATCH_SIZE = 32
+BATCH_SIZE = 16
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
