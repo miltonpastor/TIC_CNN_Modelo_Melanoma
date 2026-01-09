@@ -8,7 +8,7 @@ ENV = "local"
 # 'csv': Load from CSV and split automatically
 # 'predivided': Load from pre-divided train.txt, validation.txt, test.txt
 DATA_MODE = 'predivided'
-MODEL_NAME = 'resnet50'
+MODEL_NAME = 'resnet50'  # Options: 'resnet50', 'resnet50v2', 'efficientnet-b0', 'densenet121'
 
 # ----- SI DATA_MODE es 'csv'
 if ENV == "Colab":
@@ -55,11 +55,12 @@ LABEL_MAPPING = {
 }
 
 # Configuración de preprocesamiento de imágenes
-IMAGE_SIZE = (224, 224)  # Tamaño para ResNet50
+# ResNet50/ResNet50V2/EfficientNet-B0/DenseNet121 usan 224x224
+IMAGE_SIZE = (224, 224)
 INPUT_SHAPE = (224, 224, 3)
 
-# Batch size (optimizado para RTX 4060 Laptop 8GB)
-BATCH_SIZE = 16
+# Batch size
+BATCH_SIZE = 32
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]

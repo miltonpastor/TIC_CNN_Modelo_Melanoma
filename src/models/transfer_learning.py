@@ -15,7 +15,7 @@ def build_cnn_classifier(arch,
     Construye modelo CNN para clasificación de melanoma.
     
     Args:
-        arch: Arquitectura base ('resnet50' o 'resnet50v2')
+        arch: Arquitectura base ('resnet50', 'resnet50v2', 'efficientnet-b0', 'densenet121')
         input_shape: Dimensiones de entrada
         dropout_rate: Tasa de dropout (0.3-0.5)
         dense_units: Unidades en capa densa
@@ -38,6 +38,22 @@ def build_cnn_classifier(arch,
             input_shape=input_shape
         )
         preprocess_fn = tf.keras.applications.resnet_v2.preprocess_input
+
+    elif arch == "efficientnet-b0":
+        base = tf.keras.applications.EfficientNetB0(
+            weights='imagenet',
+            include_top=False,
+            input_shape=input_shape
+        )
+        preprocess_fn = tf.keras.applications.efficientnet.preprocess_input
+
+    elif arch == "densenet121":
+        base = tf.keras.applications.DenseNet121(
+            weights='imagenet',
+            include_top=False,
+            input_shape=input_shape
+        )
+        preprocess_fn = tf.keras.applications.densenet.preprocess_input
 
     else:
         raise ValueError(f"Arquitectura no soportada: {arch}")

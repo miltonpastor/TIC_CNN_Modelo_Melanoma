@@ -79,6 +79,7 @@ python -c "import tensorflow as tf; print(tf.config.list_physical_devices('GPU')
 ```
 
 **Salida esperada:**
+
 ```
 [PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU')]
 ```
@@ -121,7 +122,7 @@ watch -n 1 nvidia-smi
 tensorboard --logdir=outputs/resnet50_*/logs
 ```
 
-Abre en el navegador: http://localhost:6006
+Abre en el navegador: <http://localhost:6006>
 
 ## Solución de Problemas
 
