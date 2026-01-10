@@ -59,8 +59,8 @@ LABEL_MAPPING = {
 IMAGE_SIZE = (224, 224)
 INPUT_SHAPE = (224, 224, 3)
 
-# Batch size
-BATCH_SIZE = 32
+# Batch size 
+BATCH_SIZE = 32 
 
 # Normalización (ImageNet mean y std para ResNet)
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
@@ -97,9 +97,19 @@ CLASS_BALANCE_CONFIG = {
 
 # Configuración de entrenamiento
 TRAINING_CONFIG = {
-    'head_epochs': 4,
-    'finetune_epochs': 15,
+    'head_epochs': 5,
+    'finetune_epochs': 20,
     'unfreeze_layers': 30,
     'initial_lr_head': 1e-3,
-    'initial_lr_finetune': 1e-4
+    'initial_lr_finetune': 5e-5
+}
+
+# Configuración de GPU (optimizado para Tesla T4)
+GPU_CONFIG = {
+    'mixed_precision': True,  # Usar mixed precision (FP16) para ahorrar memoria y acelerar 3x
+    'memory_growth': True,  # Permitir crecimiento dinámico de memoria GPU
+    # NOTA: prefetch y num_parallel_calls usan tf.data.AUTOTUNE por defecto para mejor rendimiento
+    # Los valores abajo son solo de referencia (AUTOTUNE ajusta dinámicamente según CPU/GPU/memoria)
+    'prefetch_buffer_size': 'AUTOTUNE',  # Prefetch automático (TensorFlow optimiza)
+    'num_parallel_calls': 'AUTOTUNE',  # Paralelismo automático (TensorFlow optimiza)
 }

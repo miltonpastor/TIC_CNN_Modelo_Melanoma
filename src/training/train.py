@@ -120,6 +120,11 @@ class TwoStageTrainer:
             class_weight=class_weight
         )
         
+        # Guardar modelo final (última época)
+        final_model_path = os.path.join(OUTPUT_FOLDER, "final_model.h5")
+        self.model.save(final_model_path)
+        print(f"💾 Modelo final guardado en: {final_model_path}")
+        
         return history_b
     
     def continue_fine_tuning(self, train_data, val_data, additional_epochs, learning_rate, class_weight=None):
@@ -165,6 +170,11 @@ class TwoStageTrainer:
             class_weight=class_weight
         )
         
+        # Guardar modelo final (última época)
+        final_model_path = os.path.join(OUTPUT_FOLDER, "final_model.h5")
+        self.model.save(final_model_path)
+        print(f"💾 Modelo final guardado en: {final_model_path}")
+        
         return history
     
     def _get_callbacks(self, stage, save_model=True):
@@ -175,7 +185,7 @@ class TwoStageTrainer:
         callbacks = [
             EarlyStopping(
                 monitor='val_loss',
-                patience=5,
+                patience=8,
                 restore_best_weights=True,
                 verbose=1
             ),

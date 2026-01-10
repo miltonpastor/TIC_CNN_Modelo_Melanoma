@@ -1,6 +1,5 @@
 import tensorflow as tf
-from tensorflow.keras.applications.resnet50 import preprocess_input
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras import layers
 import numpy as np
 from config.config import (
     IMAGE_SIZE, 
@@ -13,64 +12,143 @@ from config.config import (
     HORIZONTAL_FLIP,
     VERTICAL_FLIP,
     BRIGHTNESS_RANGE,
-    CLASS_BALANCE_CONFIG
+    CLASS_BALANCE_CONFIG,
+    GPU_CONFIG
 )
 import pandas as pd
 
-def create_data_generators():
+
+def get_augmentation_layers():
     """
-    Crea generadores de datos con augmentation para train y sin augmentation para val/test.
+    Crea capas de augmentation que se ejecutan en GPU.
+    Usa tf.keras.layers.RandomFlip, RandomRotation, etc.
     
     Returns:
-        tuple: (train_datagen, val_test_datagen)
+        tf.keras.Sequential: Modelo de augmentation ejecutable en GPU
     """
-    if USE_AUGMENTATION:
-        train_datagen = ImageDataGenerator(
-            preprocessing_function=preprocess_input,  # Normalización ImageNet
-            rotation_range=ROTATION_RANGE,
-            zoom_range=ZOOM_RANGE,
-            width_shift_range=WIDTH_SHIFT_RANGE,
-            height_shift_range=HEIGHT_SHIFT_RANGE,
-            horizontal_flip=HORIZONTAL_FLIP,
-            vertical_flip=VERTICAL_FLIP,
-            brightness_range=BRIGHTNESS_RANGE,
-            fill_mode='nearest'
-        )
-    else:
-        train_datagen = ImageDataGenerator(
-            preprocessing_function=preprocess_input
-        )
+    if not USE_AUGMENTATION:
+        return None
     
-    # Para validación y test solo normalización, sin augmentation
-    val_test_datagen = ImageDataGenerator(
-        preprocessing_function=preprocess_input
-    )
+    augmentation_layers = [
+        layers.RandomFlip("horizontal" if HORIZONTAL_FLIP else ""),
+        layers.RandomFlip("vertical" if VERTICAL_FLIP else ""),
+        layers.RandomRotation(factor=ROTATION_RANGE / 360.0),  # Convertir grados a fracción
+        layers.RandomZoom(
+            height_factor=(-ZOOM_RANGE, ZOOM_RANGE),
+            width_factor=(-ZOOM_RANGE, ZOOM_RANGE)
+        ),
+        layers.RandomTranslation(
+            height_factor=HEIGHT_SHIFT_RANGE,
+            width_factor=WIDTH_SHIFT_RANGE
+        ),
+        layers.RandomBrightness(
+            factor=(BRIGHTNESS_RANGE[0] - 1.0, BRIGHTNESS_RANGE[1] - 1.0)
+        ),
+    ]
     
-    return train_datagen, val_test_datagen
+    # Filtrar capas vacías (si alguna configuración está desactivada)
+    augmentation_layers = [l for l in augmentation_layers if l is not None]
+    
+    return tf.keras.Sequential(augmentation_layers, name="data_augmentation")
 
 
-def create_data_flow_from_dataframe(datagen, dataframe, batch_size=BATCH_SIZE, shuffle=True):
+@tf.function
+def load_and_preprocess_image_tf(filepath, label, preprocess_fn, target_size=IMAGE_SIZE):
     """
-    Crea un flujo de datos desde un DataFrame que alimenta un modelo Keras.
+    Carga y preprocesa una imagen usando tf.io (ejecutable en GPU).
     
     Args:
-        datagen: ImageDataGenerator
-        dataframe: DataFrame con columnas 'filepath' y 'label'
-        batch_size: Tamaño del batch
-        shuffle: Si se debe mezclar los datos
+        filepath: Tensor con ruta de archivo
+        label: Tensor con etiqueta
+        preprocess_fn: Función de preprocesamiento del modelo (ResNet, EfficientNet, etc.)
+        target_size: Tamaño objetivo de la imagen
         
     Returns:
-        DirectoryIterator
+        tuple: (imagen_preprocesada, label)
     """
-    return datagen.flow_from_dataframe(
-        dataframe=dataframe,
-        x_col='filepath',
-        y_col='label',
-        target_size=IMAGE_SIZE,
-        batch_size=batch_size,
-        class_mode='binary',  # Clasificación binaria
-        shuffle=shuffle
+    # Leer archivo
+    img = tf.io.read_file(filepath)
+    
+    # Decodificar imagen (automáticamente detecta JPEG/PNG)
+    img = tf.image.decode_jpeg(img, channels=3)
+    
+    # Redimensionar
+    img = tf.image.resize(img, target_size)
+    
+    # Preprocesamiento específico del modelo (ImageNet normalization)
+    img = preprocess_fn(img)
+    
+    return img, label
+
+
+def create_tf_dataset(dataframe, preprocess_fn, batch_size=BATCH_SIZE, 
+                      shuffle=True, augment=False, cache=True, 
+                      prefetch_buffer=None, num_parallel_calls=None):
+    """
+    Crea un tf.data.Dataset optimizado para GPU.
+    
+    Args:
+        dataframe: DataFrame con columnas 'filepath' y 'label'
+        preprocess_fn: Función de preprocesamiento del modelo base
+        batch_size: Tamaño del batch (default: de config.BATCH_SIZE)
+        shuffle: Si se debe mezclar (True para train, False para val/test)
+        augment: Si se debe aplicar data augmentation (solo train)
+        cache: Si se debe cachear en memoria (recomendado para datasets pequeños)
+        prefetch_buffer: Tamaño del buffer de prefetch (None = usar config.GPU_CONFIG)
+        num_parallel_calls: Número de llamadas paralelas (None = usar config.GPU_CONFIG)
+        
+    Returns:
+        tf.data.Dataset: Pipeline optimizado
+    """
+    # Usar configuraciones de GPU_CONFIG si no se especifican
+    if prefetch_buffer is None:
+        # AUTOTUNE para prefetch es mejor que un valor fijo
+        prefetch_buffer = tf.data.AUTOTUNE
+    
+    if num_parallel_calls is None:
+        # Usar AUTOTUNE para mejor rendimiento (config es solo referencia)
+        num_parallel_calls = tf.data.AUTOTUNE
+    # Convertir DataFrame a listas
+    filepaths = dataframe['filepath'].values
+    labels = dataframe['label'].astype(np.float32).values
+    
+    # Crear dataset desde tensors
+    dataset = tf.data.Dataset.from_tensor_slices((filepaths, labels))
+    
+    # Shuffle si es necesario (antes de cargar imágenes para ahorrar memoria)
+    if shuffle:
+        dataset = dataset.shuffle(buffer_size=min(len(filepaths), 10000), 
+                                  reshuffle_each_iteration=True)
+    
+    # Cargar y preprocesar imágenes en paralelo
+    # AUTOTUNE permite a TensorFlow optimizar automáticamente el paralelismo
+    dataset = dataset.map(
+        lambda fp, lbl: load_and_preprocess_image_tf(fp, lbl, preprocess_fn),
+        num_parallel_calls=num_parallel_calls
     )
+    
+    # Cache en memoria (acelera lecturas repetidas)
+    # Para datasets grandes (>10GB), considerar cache en disco: cache('/tmp/cache')
+    if cache:
+        dataset = dataset.cache()
+    
+    # Batch antes de augmentation para que la GPU procese batches completos
+    dataset = dataset.batch(batch_size)
+    
+    # Aplicar augmentation en GPU (después de batch para procesamiento paralelo)
+    if augment:
+        aug_model = get_augmentation_layers()
+        if aug_model is not None:
+            dataset = dataset.map(
+                lambda x, y: (aug_model(x, training=True), y),
+                num_parallel_calls=num_parallel_calls
+            )
+    
+    # Prefetch: permite que la GPU entrene mientras la CPU prepara el siguiente batch
+    # CRÍTICO para mantener GPU ocupada al 100%
+    dataset = dataset.prefetch(buffer_size=prefetch_buffer)
+    
+    return dataset
 
 
 def oversample_minority_class(dataframe):
@@ -147,17 +225,3 @@ def load_and_preprocess_image(image_path):
     img_array = preprocess_input(img_array)
     
     return img_array
-
-
-"""
-def remove_hair_artifacts(image):
-    # TODO: por implementar - limpieza de artefactos de pelos
-    pass
-"""
-
-
-"""
-def preprocess_with_cleaning(image_path):
-    # TODO: por implementar - preprocesamiento con limpieza de artefactos
-    pass
-"""

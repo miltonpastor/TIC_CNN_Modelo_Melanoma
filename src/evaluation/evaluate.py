@@ -6,21 +6,26 @@ import os
 from evaluation.plots import plot_calibration_curve, plot_roc_curve, plot_precision_recall_curve
 from config.config import OUTPUT_FOLDER
 
-def evaluate_model_without_threshold(model, test_generator):
+def evaluate_model_without_threshold(model, test_data):
     """Evalúa métricas que NO requieren umbral (automáticas en cada run).
     
     Args:
         model: Modelo de TensorFlow a evaluar
-        test_generator: Generador de datos de prueba
+        test_data: tf.data.Dataset o generador de datos de prueba
     
     Returns:
         dict: Métricas calculadas (AUROC, AUPRC, Brier Score)
     """
-    test_generator.reset()
-    
     # Predicciones (probabilidades)
-    y_pred_proba = model.predict(test_generator).flatten()
-    y_true = test_generator.classes
+    y_pred_proba = model.predict(test_data).flatten()
+    
+    # Extraer etiquetas verdaderas del dataset
+    if isinstance(test_data, tf.data.Dataset):
+        y_true = tf.concat([y for x, y in test_data], axis=0).numpy()
+    else:
+        # Compatibilidad con generadores antiguos
+        test_data.reset()
+        y_true = test_data.classes
     
     # Métricas sin umbral
     roc_auc = roc_auc_score(y_true, y_pred_proba)
@@ -59,13 +64,13 @@ def save_scores(y_true, y_pred_proba, dataset_name='test', output_folder=OUTPUT_
     print(f"Scores ({dataset_name}) guardados en: {scores_path}")
 
 
-def evaluate_model_with_threshold(model, test_generator, threshold=0.5):
+def evaluate_model_with_threshold(model, test_data, threshold=0.5):
     """
     Evalúa el modelo con un umbral específico.
     
     Args:
         model: Modelo de TensorFlow a evaluar
-        test_generator: Generador de datos de prueba
+        test_data: tf.data.Dataset o generador de datos de prueba
         threshold: Umbral para clasificación (default: 0.5)
     
     Returns:
@@ -73,11 +78,16 @@ def evaluate_model_with_threshold(model, test_generator, threshold=0.5):
     """
     from sklearn.metrics import classification_report, confusion_matrix
     
-    test_generator.reset()
-    
     # Predicciones (probabilidades)
-    y_pred_proba = model.predict(test_generator).flatten()
-    y_true = test_generator.classes
+    y_pred_proba = model.predict(test_data).flatten()
+    
+    # Extraer etiquetas verdaderas del dataset
+    if isinstance(test_data, tf.data.Dataset):
+        y_true = tf.concat([y for x, y in test_data], axis=0).numpy()
+    else:
+        # Compatibilidad con generadores antiguos
+        test_data.reset()
+        y_true = test_data.classes
     
     # Aplicar umbral
     y_pred_classes = (y_pred_proba > threshold).astype(int)

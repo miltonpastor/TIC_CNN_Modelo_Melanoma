@@ -111,7 +111,7 @@ def analyze_no_improvement(losses, stage_name):
     return max_epochs_without_improvement
 
 def main():
-    log_dir = '/home/milton/Documents/proyects/TIC_CNN_Modelo_Melanoma/outputs/resnet50_20260103_235009/logs'
+    log_dir = '/home/milton/Documents/proyects/TIC_CNN_Modelo_Melanoma/outputs/comparison/densenet121_20260109_004724/logs'
     
     print("📁 Analizando Validation Loss desde TensorBoard logs")
     print(f"   Directorio: {log_dir}\n")
