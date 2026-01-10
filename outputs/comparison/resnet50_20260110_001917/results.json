@@ -1,0 +1,58 @@
+{
+  "model_info": {
+    "architecture": "resnet50",
+    "timestamp": "2026-01-10 14:45:48"
+  },
+  "dataset_info": {
+    "train_samples": 46840,
+    "val_samples": 11336,
+    "test_samples": 17125,
+    "total_samples": 75301,
+    "label_mapping": {
+      "Benign": 0,
+      "Malignant": 1
+    }
+  },
+  "training_config": {
+    "head_training_epochs": 4,
+    "fine_tuning_epochs": 15,
+    "total_epochs": 19,
+    "unfreeze_layers": 30,
+    "head_learning_rate": 0.001,
+    "fine_tuning_learning_rate": 0.0001,
+    "batch_size": 32
+  },
+  "model_config": {
+    "input_shape": [
+      224,
+      224,
+      3
+    ],
+    "dropout_rate": 0.5,
+    "dense_units": 128,
+    "num_classes": 1
+  },
+  "training_history": {
+    "head_training": {
+      "final_accuracy": 0.8299316763877869,
+      "final_val_accuracy": 0.848359227180481,
+      "final_loss": 0.35718056559562683,
+      "final_val_loss": 0.3152739405632019,
+      "final_auc": 0.9200758934020996,
+      "final_val_auc": 0.9377314448356628
+    },
+    "fine_tuning": {
+      "final_accuracy": 0.9261528849601746,
+      "final_val_accuracy": 0.9215772747993469,
+      "final_loss": 0.17366549372673035,
+      "final_val_loss": 0.1946519911289215,
+      "final_auc": 0.9815527200698853,
+      "final_val_auc": 0.9627726674079895
+    }
+  },
+  "evaluation_metrics": {
+    "auroc": 0.9316773320180551,
+    "auprc": 0.6718805974020483,
+    "brier_score": 0.08411517414063736
+  }
+}
