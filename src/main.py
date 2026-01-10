@@ -21,6 +21,7 @@ def configure_gpu():
     Configura GPU para optimizar rendimiento en Tesla T4.
     - Habilita mixed precision (FP16) para acelerar cómputo
     - Configura memory growth para evitar OOM
+    - Desactiva XLA por defecto
     """
     # Detectar GPUs disponibles
     gpus = tf.config.list_physical_devices('GPU')
@@ -40,6 +41,14 @@ def configure_gpu():
                 print(f"✅ Mixed precision habilitado: {policy.name}")
                 print(f"   Compute dtype: {policy.compute_dtype}")
                 print(f"   Variable dtype: {policy.variable_dtype}")
+            
+            # Configurar XLA (desactivado por defecto)
+            if GPU_CONFIG.get('xla', False):
+                tf.config.optimizer.set_jit(True)
+                print("✅ XLA habilitado")
+            else:
+                tf.config.optimizer.set_jit(False)
+                print("✅ XLA desactivado")
             
         except RuntimeError as e:
             print(f"⚠️  Error configurando GPU: {e}")

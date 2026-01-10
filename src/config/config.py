@@ -108,6 +108,7 @@ TRAINING_CONFIG = {
 GPU_CONFIG = {
     'mixed_precision': True,  # Usar mixed precision (FP16) para ahorrar memoria y acelerar 3x
     'memory_growth': True,  # Permitir crecimiento dinámico de memoria GPU
+    'xla': False,  # XLA desactivado (puede causar problemas de compilación)
     # NOTA: prefetch y num_parallel_calls usan tf.data.AUTOTUNE por defecto para mejor rendimiento
     # Los valores abajo son solo de referencia (AUTOTUNE ajusta dinámicamente según CPU/GPU/memoria)
     'prefetch_buffer_size': 'AUTOTUNE',  # Prefetch automático (TensorFlow optimiza)
