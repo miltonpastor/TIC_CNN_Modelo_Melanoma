@@ -26,7 +26,7 @@ SAMPLE_SIZE = 30  # Cambiar a None para usar TODO el dataset
 
 # ----- SI DATA_MODE es 'predivided'
 # Folder for pre-divided dataset lists
-LISTS_FOLDER = 'data/lists'
+LISTS_FOLDER = 'data/my-lists'
 # Number of training samples to use (None = use all)
 # Validation and test will be proportional
 TRAIN_SAMPLE_SIZE = None  # e.g., 10000 for 10k training samples
@@ -108,7 +108,7 @@ TRAINING_CONFIG = {
 GPU_CONFIG = {
     'mixed_precision': True,  # Usar mixed precision (FP16) para ahorrar memoria y acelerar 3x
     'memory_growth': True,  # Permitir crecimiento dinámico de memoria GPU
-    'xla': False,  # XLA desactivado (puede causar problemas de compilación)
+    'xla': True,  # XLA activado para optimización adicional de compilación
     # NOTA: prefetch y num_parallel_calls usan tf.data.AUTOTUNE por defecto para mejor rendimiento
     # Los valores abajo son solo de referencia (AUTOTUNE ajusta dinámicamente según CPU/GPU/memoria)
     'prefetch_buffer_size': 'AUTOTUNE',  # Prefetch automático (TensorFlow optimiza)

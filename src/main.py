@@ -98,7 +98,7 @@ def main():
         batch_size=BATCH_SIZE,
         shuffle=True,
         augment=True,  # Augmentation en GPU
-        cache=True     # Cache en memoria para reutilizar
+        cache=False     # Cache en memoria para reutilizar
     )
     
     # Validation: sin augmentation, sin shuffle, con cache
