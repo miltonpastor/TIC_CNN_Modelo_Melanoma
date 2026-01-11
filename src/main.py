@@ -101,24 +101,24 @@ def main():
         cache=False     # Cache en memoria para reutilizar
     )
     
-    # Validation: sin augmentation, sin shuffle, con cache
+    # Validation: sin augmentation, sin shuffle, SIN CACHE (reduce memoria)
     val_dataset = create_tf_dataset(
         val_df,
         preprocess_fn=preprocess_fn,
         batch_size=BATCH_SIZE,
         shuffle=False,
         augment=False,  # Sin augmentation para validación
-        cache=True
+        cache=False     # Desactivado para reducir uso de memoria
     )
     
-    # Test: sin augmentation, sin shuffle, con cache
+    # Test: sin augmentation, sin shuffle, SIN CACHE (reduce memoria)
     test_dataset = create_tf_dataset(
         test_df,
         preprocess_fn=preprocess_fn,
         batch_size=BATCH_SIZE,
         shuffle=False,
         augment=False,
-        cache=True
+        cache=False     # Desactivado para reducir uso de memoria
     )
     
     print(f"✅ Train dataset: {len(train_df_balanced)} muestras")

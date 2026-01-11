@@ -1,4 +1,4 @@
-# Optimizaciones para EC2 con Tesla T4
+    # Optimizaciones para EC2 con Tesla T4
 
 ## ✅ Solución aplicada al problema OOM
 

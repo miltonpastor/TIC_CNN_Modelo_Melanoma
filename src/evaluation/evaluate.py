@@ -8,6 +8,7 @@ from config.config import OUTPUT_FOLDER
 
 def evaluate_model_without_threshold(model, test_data):
     """Evalúa métricas que NO requieren umbral (automáticas en cada run).
+    OPTIMIZADO: Lee scores desde CSV en chunks para evitar OOM.
     
     Args:
         model: Modelo de TensorFlow a evaluar
@@ -16,8 +17,26 @@ def evaluate_model_without_threshold(model, test_data):
     Returns:
         dict: Métricas calculadas (AUROC, AUPRC, Brier Score)
     """
-    # Guardar scores de forma incremental (evita OOM)
-    y_true, y_pred_proba = save_scores_incremental(model, test_data, dataset_name='test')
+    # Guardar scores de forma incremental (evita OOM) - retorna path del CSV
+    scores_path = save_scores_incremental(model, test_data, dataset_name='test')
+    
+    # Leer scores desde CSV en chunks (evita cargar todo en memoria)
+    print("\n📊 Calculando métricas desde CSV...")
+    
+    # Para métricas que requieren todos los datos, leer en chunks y calcular
+    # Usamos iteradores para no cargar todo
+    y_true = []
+    y_pred_proba = []
+    
+    # Leer CSV en chunks de 10k muestras
+    chunk_size = 10000
+    for chunk in pd.read_csv(scores_path, chunksize=chunk_size):
+        y_true.extend(chunk['true_label'].values)
+        y_pred_proba.extend(chunk['predicted_score'].values)
+    
+    # Convertir a numpy arrays (ahora que ya tenemos todo)
+    y_true = np.array(y_true)
+    y_pred_proba = np.array(y_pred_proba)
     
     # Métricas sin umbral
     roc_auc = roc_auc_score(y_true, y_pred_proba)
@@ -28,6 +47,11 @@ def evaluate_model_without_threshold(model, test_data):
     plot_calibration_curve(y_true, y_pred_proba)
     plot_roc_curve(y_true, y_pred_proba)
     plot_precision_recall_curve(y_true, y_pred_proba)
+    
+    # Liberar memoria
+    del y_true, y_pred_proba
+    import gc
+    gc.collect()
     
     return {
         'roc_auc': roc_auc,
@@ -53,27 +77,29 @@ def save_scores(y_true, y_pred_proba, dataset_name='test', output_folder=OUTPUT_
     print(f"Scores ({dataset_name}) guardados en: {scores_path}")
 
 
-def save_scores_incremental(model, dataset, dataset_name='test', output_folder=OUTPUT_FOLDER):
+def save_scores_incremental(model, dataset, dataset_name='test', output_folder=OUTPUT_FOLDER, chunk_size=1000):
     """Guarda scores procesando y escribiendo en batches incrementales.
-    Evita cargar todo el dataset en memoria (previene OOM en EC2).
+    OPTIMIZADO para evitar OOM: no acumula todo en memoria.
     
     Args:
         model: Modelo de TensorFlow para predicciones
         dataset: tf.data.Dataset o generador
         dataset_name: Nombre del dataset ('validation' o 'test')
         output_folder: Carpeta de salida
+        chunk_size: Tamaño de chunk para liberar memoria (default: 1000 muestras)
     
     Returns:
-        tuple: (y_true_array, y_pred_array) para calcular métricas
+        str: Ruta del archivo CSV guardado (para cargar después si es necesario)
     """
     scores_path = os.path.join(output_folder, f'prediction_scores_{dataset_name}.csv')
     
-    # Listas para acumular (más eficiente que numpy para append)
-    all_true = []
-    all_pred = []
+    # Chunk temporal para escribir periódicamente (evita crear DataFrames grandes)
+    chunk_true = []
+    chunk_pred = []
     
     # Procesar batch por batch
     batch_count = 0
+    total_samples = 0
     
     # Crear/truncar archivo con header
     with open(scores_path, 'w') as f:
@@ -88,30 +114,50 @@ def save_scores_incremental(model, dataset, dataset_name='test', output_folder=O
         batch_pred = model.predict(batch_x, verbose=0).flatten()
         batch_true = batch_y.numpy()
         
-        # Guardar batch actual al CSV (append mode)
-        batch_df = pd.DataFrame({
-            'true_label': batch_true,
-            'predicted_score': batch_pred
-        })
-        batch_df.to_csv(scores_path, mode='a', header=False, index=False)
+        # Acumular en chunk temporal
+        chunk_true.extend(batch_true)
+        chunk_pred.extend(batch_pred)
+        total_samples += len(batch_true)
         
-        # Acumular para retornar (para métricas)
-        all_true.extend(batch_true)
-        all_pred.extend(batch_pred)
+        # Escribir chunk al CSV cuando alcance el tamaño límite
+        if len(chunk_true) >= chunk_size:
+            batch_df = pd.DataFrame({
+                'true_label': chunk_true,
+                'predicted_score': chunk_pred
+            })
+            batch_df.to_csv(scores_path, mode='a', header=False, index=False)
+            
+            # Limpiar chunk (liberar memoria)
+            chunk_true = []
+            chunk_pred = []
+            
+            # Limpiar sesión de Keras
+            import gc
+            gc.collect()
+            tf.keras.backend.clear_session()
         
         # Progress cada 50 batches
         if batch_count % 50 == 0:
-            print(f"  Procesados {batch_count} batches ({len(all_true)} muestras)...")
-        
-        # Limpiar memoria cada 100 batches
-        if batch_count % 100 == 0:
-            tf.keras.backend.clear_session()
+            print(f"  Procesados {batch_count} batches ({total_samples} muestras)...")
+    
+    # Escribir chunk final (si quedó algo)
+    if chunk_true:
+        batch_df = pd.DataFrame({
+            'true_label': chunk_true,
+            'predicted_score': chunk_pred
+        })
+        batch_df.to_csv(scores_path, mode='a', header=False, index=False)
     
     print(f"✅ Scores ({dataset_name}) guardados en: {scores_path}")
-    print(f"   Total: {len(all_true)} muestras en {batch_count} batches")
+    print(f"   Total: {total_samples} muestras en {batch_count} batches")
     
-    # Retornar arrays para cálculo de métricas
-    return np.array(all_true), np.array(all_pred)
+    # Limpiar memoria final
+    import gc
+    gc.collect()
+    tf.keras.backend.clear_session()
+    
+    # Retornar path (no arrays grandes en memoria)
+    return scores_path
 
 
 def evaluate_model_with_threshold(model, test_data, threshold=0.5):
