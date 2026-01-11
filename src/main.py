@@ -6,7 +6,7 @@ from data.split_data import create_splits
 from config.config import (
     OUTPUT_FOLDER, SAMPLE_SIZE, MODEL_CONFIG as config_model, 
     TRAINING_CONFIG as config_train, DATA_MODE, MODEL_NAME, 
-    TRAIN_SAMPLE_SIZE, BATCH_SIZE, GPU_CONFIG
+    TRAIN_SAMPLE_SIZE, BATCH_SIZE, GPU_CONFIG, CLASS_BALANCE_CONFIG
 )
 from models.transfer_learning import build_cnn_classifier
 from training.train import TwoStageTrainer
