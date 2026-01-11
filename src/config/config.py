@@ -26,7 +26,7 @@ SAMPLE_SIZE = 30  # Cambiar a None para usar TODO el dataset
 
 # ----- SI DATA_MODE es 'predivided'
 # Folder for pre-divided dataset lists
-LISTS_FOLDER = 'data/lists'
+LISTS_FOLDER = 'data/my-lists'
 # Number of training samples to use (None = use all)
 # Validation and test will be proportional
 TRAIN_SAMPLE_SIZE = None  # e.g., 10000 for 10k training samples
@@ -68,14 +68,14 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 # Augmentation
 USE_AUGMENTATION = True
-ROTATION_RANGE = 20
-ZOOM_RANGE = 0.15
-WIDTH_SHIFT_RANGE = 0.1
-HEIGHT_SHIFT_RANGE = 0.1
+ROTATION_RANGE = 40
+ZOOM_RANGE = 0.25
+WIDTH_SHIFT_RANGE = 0.2
+HEIGHT_SHIFT_RANGE = 0.2
 HORIZONTAL_FLIP = True
-VERTICAL_FLIP = False
-BRIGHTNESS_RANGE = [0.95, 1.05]
-SHEAR_RANGE = 0.0
+VERTICAL_FLIP = True
+BRIGHTNESS_RANGE = [0.8, 1.2]
+SHEAR_RANGE = 0.15
 
 # Configuración del modelo
 MODEL_CONFIG = {
@@ -100,7 +100,7 @@ CLASS_BALANCE_CONFIG = {
 TRAINING_CONFIG = {
     'head_epochs': 4,
     'finetune_epochs': 15,
-    'unfreeze_layers': 30,
+    'unfreeze_layers': 60,
     'initial_lr_head': 1e-3,
     'initial_lr_finetune': 1e-4
 }

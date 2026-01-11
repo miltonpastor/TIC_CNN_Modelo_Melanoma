@@ -84,9 +84,9 @@ MODEL_CONFIG = {
 TRAINING_CONFIG = {
     'head_epochs': 4,
     'finetune_epochs': 15,
-    'unfreeze_layers': 50,
+    'unfreeze_layers': 60,
     'initial_lr_head': 1e-3,
-    'initial_lr_finetune': 1e-5
+    'initial_lr_finetune': 1e-4
 }
 
 
