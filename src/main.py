@@ -133,11 +133,9 @@ def main():
     # Graficar resultados
     plot_two_stage_training(history_a, history_b)
 
-    # Guardar scores del validation set
-    from evaluation.evaluate import save_scores
-    val_predictions = trainer.model.predict(val_dataset)
-    val_true = tf.concat([y for x, y in val_dataset], axis=0).numpy()
-    save_scores(val_true, val_predictions.flatten(), dataset_name='validation')
+    # Guardar scores del validation set (incremental para evitar OOM)
+    from evaluation.evaluate import save_scores_incremental
+    save_scores_incremental(trainer.model, val_dataset, dataset_name='validation')
 
     # Evaluar modelo en test set (métricas sin umbral)
     eval_results = evaluate_model_without_threshold(trainer.model, test_dataset)
