@@ -73,8 +73,12 @@ def main():
     from data.preprocessing import oversample_minority_class
     train_df_balanced = oversample_minority_class(train_df)
     
-    # Calcular class weights para balancear clases
-    class_weight_dict = calculate_class_weights(train_df_balanced['label'])
+    # Calcular class weights para balancear clases (si está activado)
+    if CLASS_BALANCE_CONFIG['use_class_weights']:
+        class_weight_dict = calculate_class_weights(train_df_balanced['label'])
+    else:
+        class_weight_dict = None
+        print("⚠️  Class weights desactivado (use_class_weights=False)")
 
     # Construir modelo
     model, base, preprocess_fn = build_cnn_classifier(

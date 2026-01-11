@@ -26,7 +26,7 @@ SAMPLE_SIZE = 30  # Cambiar a None para usar TODO el dataset
 
 # ----- SI DATA_MODE es 'predivided'
 # Folder for pre-divided dataset lists
-LISTS_FOLDER = 'data/my-lists'
+LISTS_FOLDER = 'data/lists'
 # Number of training samples to use (None = use all)
 # Validation and test will be proportional
 TRAIN_SAMPLE_SIZE = None  # e.g., 10000 for 10k training samples
@@ -68,14 +68,14 @@ IMAGENET_STD = [0.229, 0.224, 0.225]
 
 # Augmentation
 USE_AUGMENTATION = True
-ROTATION_RANGE = 40
-ZOOM_RANGE = 0.25
-WIDTH_SHIFT_RANGE = 0.2
-HEIGHT_SHIFT_RANGE = 0.2
+ROTATION_RANGE = 20
+ZOOM_RANGE = 0.15
+WIDTH_SHIFT_RANGE = 0.1
+HEIGHT_SHIFT_RANGE = 0.1
 HORIZONTAL_FLIP = True
-VERTICAL_FLIP = True
-BRIGHTNESS_RANGE = [0.8, 1.2]
-SHEAR_RANGE = 0.15
+VERTICAL_FLIP = False
+BRIGHTNESS_RANGE = [0.95, 1.05]
+SHEAR_RANGE = 0.0
 
 # Configuración del modelo
 MODEL_CONFIG = {
@@ -90,6 +90,7 @@ CLASS_BALANCE_CONFIG = {
     'use_oversampling': False,  # Activar oversampling de clase minoritaria
     'minority_class': 1,  # Clase a oversamplear (1 = Malignant)
     'oversample_ratio': 3.0,  # Multiplicador: 3x más ejemplos de malignos
+    'use_class_weights': True,  # Activar class_weight en el entrenamiento
     'use_focal_loss': False,  # Usar Focal Loss en lugar de BCE
     'focal_gamma': 2.0,  # Parámetro gamma de focal loss
     'focal_alpha': 0.25,  # Parámetro alpha de focal loss (peso clase positiva)
@@ -97,11 +98,11 @@ CLASS_BALANCE_CONFIG = {
 
 # Configuración de entrenamiento
 TRAINING_CONFIG = {
-    'head_epochs': 5,
-    'finetune_epochs': 20,
+    'head_epochs': 4,
+    'finetune_epochs': 15,
     'unfreeze_layers': 30,
     'initial_lr_head': 1e-3,
-    'initial_lr_finetune': 5e-5
+    'initial_lr_finetune': 1e-4
 }
 
 # Configuración de GPU (optimizado para Tesla T4)
