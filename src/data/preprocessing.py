@@ -29,9 +29,18 @@ def get_augmentation_layers():
     if not USE_AUGMENTATION:
         return None
     
-    augmentation_layers = [
-        layers.RandomFlip("horizontal" if HORIZONTAL_FLIP else ""),
-        layers.RandomFlip("vertical" if VERTICAL_FLIP else ""),
+    augmentation_layers = []
+    
+    # Solo agregar RandomFlip si está activado
+    if HORIZONTAL_FLIP and VERTICAL_FLIP:
+        augmentation_layers.append(layers.RandomFlip("horizontal_and_vertical"))
+    elif HORIZONTAL_FLIP:
+        augmentation_layers.append(layers.RandomFlip("horizontal"))
+    elif VERTICAL_FLIP:
+        augmentation_layers.append(layers.RandomFlip("vertical"))
+    
+    # Agregar otras transformaciones
+    augmentation_layers.extend([
         layers.RandomRotation(factor=ROTATION_RANGE / 360.0),  # Convertir grados a fracción
         layers.RandomZoom(
             height_factor=(-ZOOM_RANGE, ZOOM_RANGE),
@@ -44,10 +53,7 @@ def get_augmentation_layers():
         layers.RandomBrightness(
             factor=(BRIGHTNESS_RANGE[0] - 1.0, BRIGHTNESS_RANGE[1] - 1.0)
         ),
-    ]
-    
-    # Filtrar capas vacías (si alguna configuración está desactivada)
-    augmentation_layers = [l for l in augmentation_layers if l is not None]
+    ])
     
     return tf.keras.Sequential(augmentation_layers, name="data_augmentation")
 
