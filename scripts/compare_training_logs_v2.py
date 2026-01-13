@@ -190,13 +190,13 @@ def plot_comparison(models_data, output_dir):
 
 def main():
     # Directorio base
-    base_dir = '/home/milton/Documents/proyects/TIC_CNN_Modelo_Melanoma/outputs/comparison'
+    base_dir = '/home/milton/Documents/proyects/TIC_CNN_Modelo_Melanoma/outputs/comparison_02'
     
     # Modelos a comparar
     models = [
-        {'path': 'densenet121_20260109_004724', 'name': 'densenet121'},
-        {'path': 'efficientnet-b0_20260109_084143', 'name': 'efficientnet-b0'},
-        {'path': 'resnet50_20260110_001917', 'name': 'resnet50'}
+        {'path': 'densenet121_20260111_090433', 'name': 'densenet121'},
+        {'path': 'efficientnet-b0_20260111_015704', 'name': 'efficientnet-b0'},
+        {'path': 'resnet50_20260111_002544', 'name': 'resnet50'}
     ]
     
     # Extraer métricas de cada modelo

@@ -13,27 +13,27 @@ sys.path.append('src')
 
 import tensorflow as tf
 from data.data_loader import load_predivided_data
-from data.preprocessing import create_data_generators, create_data_flow_from_dataframe
+from data.preprocessing import create_tf_dataset, oversample_minority_class
 from utils.class_weights import calculate_class_weights
 from training.train import TwoStageTrainer
 from evaluation.evaluate import evaluate_model_without_threshold
 from evaluation.metrics import save_results
+from config.config import BATCH_SIZE, CLASS_BALANCE_CONFIG
 from datetime import datetime
 import json
 
 # ============ CONFIGURACIÓN ============
 # Ruta al modelo pre-entrenado
-# outputs\resnet50_20251221_124318\best_model.h5
-PRETRAINED_MODEL_PATH = 'outputs/resnet50_20251221_124318/best_model.h5'
+PRETRAINED_MODEL_PATH = 'outputs/comparision_resnet/resnet50_20260110_001917-normal/best_model.h5'
 
 # Épocas ya completadas (head_training: 4 + fine_tuning: 15 = 19)
 COMPLETED_EPOCHS = 19
 
-# Épocas objetivo para fine-tuning (querías 50 en total)
-TARGET_FINE_TUNING_EPOCHS = 20
+# Épocas objetivo para fine-tuning
+TARGET_FINE_TUNING_EPOCHS = 29  # 19 + 10 épocas adicionales
 
 # Épocas adicionales a entrenar
-ADDITIONAL_EPOCHS = TARGET_FINE_TUNING_EPOCHS - 19  # 20 - 19 = 1 época más
+ADDITIONAL_EPOCHS = 10  # 10 épocas más
 
 # Learning rate para continuar (puede ser más bajo)
 CONTINUE_LR = 1e-5 
@@ -63,17 +63,17 @@ def main():
     print("\n📥 Cargando datos...")
     train_df, val_df, test_df = load_predivided_data()
     
+    # Aplicar oversampling si está configurado
+    train_df_balanced = oversample_minority_class(train_df)
+    
     # Calcular class weights
-    class_weight_dict = calculate_class_weights(train_df['label'])
+    if CLASS_BALANCE_CONFIG['use_class_weights']:
+        class_weight_dict = calculate_class_weights(train_df_balanced['label'])
+    else:
+        class_weight_dict = None
+        print("⚠️  Class weights desactivado")
     
-    # Crear generadores
-    print("\n🔧 Creando generadores de datos...")
-    train_datagen, val_test_datagen = create_data_generators()
-    train_generator = create_data_flow_from_dataframe(train_datagen, train_df)
-    val_generator = create_data_flow_from_dataframe(val_test_datagen, val_df, shuffle=False)
-    test_generator = create_data_flow_from_dataframe(val_test_datagen, test_df, shuffle=False)
-    
-    # Cargar modelo pre-entrenado
+    # Cargar modelo pre-entrenado PRIMERO para obtener preprocess_fn
     print(f"\n🔄 Cargando modelo desde: {PRETRAINED_MODEL_PATH}")
     model = tf.keras.models.load_model(PRETRAINED_MODEL_PATH)
     
@@ -81,14 +81,49 @@ def main():
     trainable_count = sum([1 for layer in model.layers if layer.trainable])
     print(f"   Capas entrenables: {trainable_count}/{len(model.layers)}")
     
+    # Determinar función de preprocesamiento según el modelo
+    model_name = PRETRAINED_MODEL_PATH.split('/')[-2].split('_')[0]
+    if 'resnet50' in model_name:
+        from tensorflow.keras.applications.resnet50 import preprocess_input as preprocess_fn
+    elif 'efficientnet' in model_name:
+        from tensorflow.keras.applications.efficientnet import preprocess_input as preprocess_fn
+    elif 'densenet' in model_name:
+        from tensorflow.keras.applications.densenet import preprocess_input as preprocess_fn
+    else:
+        from tensorflow.keras.applications.resnet50 import preprocess_input as preprocess_fn
+        print("⚠️  Modelo no reconocido, usando preprocess de ResNet50")
+    
+    # Crear datasets tf.data optimizados
+    print("\n🔧 Creando datasets TensorFlow...")
+    train_dataset = create_tf_dataset(
+        train_df_balanced,
+        preprocess_fn,
+        batch_size=BATCH_SIZE,
+        is_training=True
+    )
+    
+    val_dataset = create_tf_dataset(
+        val_df,
+        preprocess_fn,
+        batch_size=BATCH_SIZE,
+        is_training=False
+    )
+    
+    test_dataset = create_tf_dataset(
+        test_df,
+        preprocess_fn,
+        batch_size=BATCH_SIZE,
+        is_training=False
+    )
+    
     # Crear trainer (base no se usa en continue_fine_tuning, pero se requiere para inicializar)
     trainer = TwoStageTrainer(model, None, config.TRAINING_CONFIG)
     
     # Continuar entrenamiento usando el método del trainer
     print(f"\n🚀 Iniciando entrenamiento adicional...")
     history = trainer.continue_fine_tuning(
-        train_generator,
-        val_generator,
+        train_dataset,
+        val_dataset,
         additional_epochs=ADDITIONAL_EPOCHS,
         learning_rate=CONTINUE_LR,
         class_weight=class_weight_dict
@@ -98,7 +133,7 @@ def main():
     
     # Evaluar modelo (métricas sin umbral, consistentes con save_results)
     print("\n📊 Evaluando modelo en test set...")
-    eval_results = evaluate_model_without_threshold(trainer.model, test_generator)
+    eval_results = evaluate_model_without_threshold(trainer.model, test_dataset)
     
     # Guardar resultados
     print("\n💾 Guardando resultados...")
