@@ -12,7 +12,7 @@ import json
 # ============================================================================
 # CONFIGURACIÓN - Modifica estos valores según tus necesidades
 # ============================================================================
-RUN_DIR = 'densenet121_20260111_090433'  # Nombre del directorio del run
+RUN_DIR = 'resnet50_20251212_082430-batchsizemayor'  # Nombre del directorio del run
 DATASET = 'test'                 # 'validation' o 'test'
 # ============================================================================
 

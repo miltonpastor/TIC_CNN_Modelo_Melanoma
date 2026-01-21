@@ -23,7 +23,8 @@ from evaluation.plots import plot_confusion_matrix
 from evaluation.metrics import save_threshold_evaluation
 from evaluation.evaluate import evaluate_model_with_threshold
 from data.data_loader import load_predivided_data
-from data.preprocessing import create_data_generators, create_data_flow_from_dataframe
+from data.preprocessing import create_tf_dataset
+from models.transfer_learning import build_cnn_classifier
 
 # Intentar habilitar memory growth en GPU para evitar reservas completas de VRAM
 try:
@@ -42,6 +43,26 @@ def evaluate_with_threshold(run_dir, threshold):
         run_dir: Directorio del run (ej: outputs/resnet50_20251212_082430)
         threshold: Umbral para clasificación (ej: 0.5)
     """
+    import json
+    from config.config import BATCH_SIZE
+    
+    # Cargar configuración del run
+    results_path = os.path.join(run_dir, 'results.json')
+    if not os.path.exists(results_path):
+        print(f"❌ Error: No se encontró results.json en {run_dir}")
+        return
+    
+    with open(results_path, 'r') as f:
+        results = json.load(f)
+    
+    # Obtener configuración del modelo
+    model_config = results.get('model_config', {})
+    model_name = model_config.get('architecture', 'resnet50')
+    input_shape = tuple(model_config.get('input_shape', [224, 224, 3]))
+    
+    print(f"📋 Modelo: {model_name}")
+    print(f"📐 Input shape: {input_shape}")
+    
     # Cargar el modelo
     model_path = os.path.join(run_dir, 'best_model.h5')
     if not os.path.exists(model_path):
@@ -52,16 +73,39 @@ def evaluate_with_threshold(run_dir, threshold):
     # compile=False evita el warning de absl sobre métricas compiladas cuando solo hacemos inferencia
     model = tf.keras.models.load_model(model_path, compile=False)
     
-    # Cargar datos de test como DataFrame y convertir a generator
+    # Obtener función de preprocesamiento según la arquitectura
+    print(f"🔧 Obteniendo función de preprocesamiento para {model_name}...")
+    if model_name == "resnet50":
+        preprocess_fn = tf.keras.applications.resnet.preprocess_input
+    elif model_name == "resnet50v2":
+        preprocess_fn = tf.keras.applications.resnet_v2.preprocess_input
+    elif model_name == "efficientnet-b0":
+        preprocess_fn = tf.keras.applications.efficientnet.preprocess_input
+    elif model_name == "densenet121":
+        preprocess_fn = tf.keras.applications.densenet.preprocess_input
+    else:
+        print(f"⚠️ Arquitectura no reconocida: {model_name}, usando ResNet50 por defecto")
+        preprocess_fn = tf.keras.applications.resnet.preprocess_input
+    
+    # Cargar datos de test como DataFrame
     print("📊 Cargando datos de test...")
     _, _, test_df = load_predivided_data()
-    _, val_test_datagen = create_data_generators()
-    test_generator = create_data_flow_from_dataframe(val_test_datagen, test_df, shuffle=False)
+    
+    # Crear dataset optimizado
+    print("🔄 Creando pipeline de datos...")
+    test_dataset = create_tf_dataset(
+        test_df,
+        preprocess_fn=preprocess_fn,
+        batch_size=BATCH_SIZE,
+        shuffle=False,
+        augment=False,
+        cache=False
+    )
     
     # Evaluar con el umbral especificado
     print(f"🔍 Evaluando con umbral {threshold}...")
     report, cm, accuracy, y_true, y_pred_proba = evaluate_model_with_threshold(
-        model, test_generator, threshold
+        model, test_dataset, threshold
     )
     
     # Crear directorio de salida

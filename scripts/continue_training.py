@@ -99,21 +99,24 @@ def main():
         train_df_balanced,
         preprocess_fn,
         batch_size=BATCH_SIZE,
-        is_training=True
+        shuffle=True,
+        augment=True
     )
     
     val_dataset = create_tf_dataset(
         val_df,
         preprocess_fn,
         batch_size=BATCH_SIZE,
-        is_training=False
+        shuffle=False,
+        augment=False
     )
     
     test_dataset = create_tf_dataset(
         test_df,
         preprocess_fn,
         batch_size=BATCH_SIZE,
-        is_training=False
+        shuffle=False,
+        augment=False
     )
     
     # Crear trainer (base no se usa en continue_fine_tuning, pero se requiere para inicializar)
